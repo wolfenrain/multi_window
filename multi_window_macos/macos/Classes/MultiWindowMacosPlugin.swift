@@ -50,7 +50,10 @@ public class MultiWindowMacosPlugin: NSObject, FlutterPlugin {
       return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'key' parameter", details: nil))
     }
     
-    let flutterController = FlutterViewController.init()
+    let project = FlutterDartProject.init()
+    project.dartEntrypointArguments = [key]
+    
+    let flutterController = FlutterViewController.init(project: project)
     MultiWindowMacosPlugin.registerGeneratedPlugins(flutterController)
     
     let window = MultiWindow()
