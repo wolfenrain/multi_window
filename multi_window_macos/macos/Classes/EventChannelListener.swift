@@ -11,6 +11,8 @@ class EventChannelListener: NSObject, FlutterStreamHandler {
     func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
         print("EventChannelListener.onListen => eventChannel attached")
         
+        // TODO: see if we can use arguments to identify different windows
+
         return nil
     }
 

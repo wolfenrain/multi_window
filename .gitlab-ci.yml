@@ -19,7 +19,8 @@ dartdoc:
   script:
     - cd "${PROJECT}"
     - flutter pub get
-    - dartdoc --no-auto-include-dependencies --quiet
+    - pub global activate dartdoc
+    - pub global run dartdoc:dartdoc --no-auto-include-dependencies --quiet
   only:
     refs:
       - merge_requests

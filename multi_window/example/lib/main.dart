@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:multi_window/multi_window.dart';
 
 void main(List<String> args) {
+  print(args);
   runApp(MyApp());
 }
 
@@ -48,7 +49,7 @@ class _MyHomePageState extends State<MyHomePage> {
           child: Scaffold(
             appBar: AppBar(title: Text(widget.title)),
             body: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 Column(
                   mainAxisAlignment: MainAxisAlignment.center,

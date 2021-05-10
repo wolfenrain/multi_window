@@ -30,8 +30,8 @@ public class MultiWindowMacosPlugin: NSObject, FlutterPlugin {
 
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
     switch call.method {
-   case "create":
-     create(call, result: result)
+    case "create":
+      create(call, result: result)
     case "count":
       result(NSApp.windows.count)
     default:
@@ -40,12 +40,13 @@ public class MultiWindowMacosPlugin: NSObject, FlutterPlugin {
   }
 
   public func create(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+    let args = MultiWindowMacosPlugin.getArgs(call.arguments)
+
     // Check if we already have a window with given key.
-    if (getWindow(call) != nil) {
-        return;
+    if (getWindow(args) != nil) {
+      return;
     }
     
-    let args = getArgs(call)
     guard let key = args["key"] as? String else {
       return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'key' parameter", details: nil))
     }
@@ -73,17 +74,17 @@ public class MultiWindowMacosPlugin: NSObject, FlutterPlugin {
     windowController.showWindow(self)
   }
   
-  private func getArgs(_ call: FlutterMethodCall) -> [String: Any?] {
-    guard let arguments = call.arguments as? [String: Any?] else {
+  public static func getArgs(_ arguments: Any?) -> [String: Any?] {
+    guard let arguments = arguments as? [String: Any?] else {
       return [:]
     }
     return arguments
   }
 
-  private func getWindow(_ call: FlutterMethodCall) -> MultiWindow? {
-    let args = getArgs(call)
+  private func getWindow(_ arguments: [String: Any?]) -> MultiWindow? {
+    let args = getArgs(call.arguments)
     
-    guard let key = args["args"] as? String  else {
+    guard let key = arguments["args"] as? String  else {
       return nil
     }
     
