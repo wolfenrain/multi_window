@@ -102,6 +102,13 @@ packages:
       relative: true
     source: path
     version: "0.0.1"
+  multi_window_macos:
+    dependency: transitive
+    description:
+      path: "../../multi_window_macos"
+      relative: true
+    source: path
+    version: "0.0.1"
   path:
     dependency: transitive
     description:

@@ -1,5 +1,6 @@
 library multi_window_interface;
 
+import 'package:multi_window_interface/data_event.dart';
 import 'package:multi_window_interface/platform_not_implemented.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
@@ -20,5 +21,13 @@ abstract class MultiWindowInterface extends PlatformInterface {
 
   MultiWindowInterface() : super(token: _token);
 
-  Future<void> createWindow();
+  Stream<DataEvent> get events;
+
+  Future<void> create(String key);
+
+  Future<int> count();
+
+  Future<String> getTitle(String key);
+
+  Future<void> setTitle(String key, String title);
 }

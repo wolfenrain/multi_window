@@ -1,0 +1,63 @@
+image: cirrusci/flutter:stable
+
+stages:
+  - lint
+  - test
+  - publish
+
+dartdoc:
+  <<: *projects
+  stage: lint
+  script:
+    - cd "${PROJECT}"
+    - flutter pub get
+    - dartdoc --no-auto-include-dependencies --quiet
+  only:
+    refs:
+      - merge_requests
+      - master
+    changes:
+      - ./**/lib/**/*.dart
+      - ./**/README.md
+      - .gitlab-ci.yml
+
+flutter_analyze:
+  <<: *projects
+  stage: lint
+  script:
+    - cd "${PROJECT}"
+    - flutter pub get
+    - flutter analyze --pub
+    - flutter format -n --set-exit-if-changed .
+  only:
+    refs:
+      - merge_requests
+      - master
+    changes:
+      - ./**/lib/**/*.dart
+      - ./**/test/**/*.dart
+      - .gitlab-ci.yml
+
+# unit_test:
+#   <<: *projects
+#   stage: test
+#   script:
+#     - cd "${PROJECT}"
+#     - flutter test --coverage --pub test
+#     - lcov --list ./coverage/lcov.info
+#   only:
+#     refs:
+#       - merge_requests
+#       - master
+#     changes:
+#       - ./**/lib/**/*.dart
+#       - ./**/test/**/*.dart
+#       - .gitlab-ci.yml
+
+.projects: &projects
+  parallel:
+    matrix:
+      - PROJECT: multi_window
+      - PROJECT: multi_window_interface
+      - PROJECT: multi_window_linux
+      - PROJECT: multi_window_macos

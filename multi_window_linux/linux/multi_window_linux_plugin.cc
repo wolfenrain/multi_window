@@ -34,6 +34,24 @@ static void multi_window_linux_plugin_handle_method_call(
   if (strcmp(method, "create")== 0) {
     FlView* view = fl_plugin_registrar_get_view(self->registrar);
     if (view != nullptr) {
+
+      /// TODO: read out key and use it to check if a window already exists.
+      /// - `GtkWindow` is a indirect subclass of `GObject`, so `g_object_set` and `g_object_get` methods are applyable:
+      ///   ```cpp
+      ///   int pid = 12345;
+      ///   GValue val = G_VALUE_INIT;
+      ///   g_value_init (&val, G_TYPE_INT);
+      ///   g_value_set_int (&val, pid);
+      ///   g_object_set (G_OBJECT(window), "pID", &val, NULL); //add to GTKWindow
+      ///   ```
+      ///
+      ///   ```cpp
+      ///   GValue _pid;
+      ///   g_object_get_property(G_OBJECT(window), "pID", &_pid);
+      ///   ```
+      /// TODO: keep track of all created windows somehow.
+      /// - `gtk_window_list_toplevels` lists of windows
+      
       GtkWindow* current_window = GTK_WINDOW(gtk_widget_get_toplevel(GTK_WIDGET(view)));
       GtkApplication* application = gtk_window_get_application(current_window);
 
@@ -123,15 +141,27 @@ void multi_window_linux_plugin_register_with_registrar(FlPluginRegistrar* regist
       g_object_new(multi_window_linux_plugin_get_type(), nullptr));
 
   plugin->registrar = FL_PLUGIN_REGISTRAR(g_object_ref(registrar));
-
+  
+  g_autoptr(FlBinaryMessenger) messenger = fl_plugin_registrar_get_messenger(registrar);
   g_autoptr(FlStandardMethodCodec) codec = fl_standard_method_codec_new();
-  g_autoptr(FlMethodChannel) channel =
-      fl_method_channel_new(fl_plugin_registrar_get_messenger(registrar),
+
+  // Setup method channel.
+  g_autoptr(FlMethodChannel) method_channel =
+      fl_method_channel_new(messenger,
                             "multi_window_linux",
                             FL_METHOD_CODEC(codec));
-  fl_method_channel_set_method_call_handler(channel, method_call_cb,
+  fl_method_channel_set_method_call_handler(method_channel, method_call_cb,
                                             g_object_ref(plugin),
                                             g_object_unref);
+
+  // Setup event channel.
+  g_autoptr(FlEventChannel) events_channel = 
+      fl_event_channel_new(messenger, 
+                            "multi_window_linux/events", 
+                            FL_METHOD_CODEC(codec));
+  fl_event_channel_set_stream_handlers(events_channel, listen_cb,  // TODO: Implemented cb method
+                                        cancel_cb, nullptr,
+                                        nullptr);
 
   g_object_unref(plugin);
 }
