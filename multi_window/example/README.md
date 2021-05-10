@@ -1,6 +1,6 @@
-# example
+# multi_window_example
 
-A new Flutter project.
+Example for the multi_window plugin.
 
 ## Getting Started
 

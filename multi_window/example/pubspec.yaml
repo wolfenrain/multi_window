@@ -1,5 +1,5 @@
-name: example
-description: A new Flutter project.
+name: multi_window_example
+description: Example for the multi_window plugin.
 
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
