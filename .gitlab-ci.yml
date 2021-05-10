@@ -5,6 +5,14 @@ stages:
   - test
   - publish
 
+.projects: &projects
+  parallel:
+    matrix:
+      - PROJECT: multi_window
+      - PROJECT: multi_window_interface
+      - PROJECT: multi_window_linux
+      - PROJECT: multi_window_macos
+
 dartdoc:
   <<: *projects
   stage: lint
@@ -53,11 +61,3 @@ flutter_analyze:
 #       - ./**/lib/**/*.dart
 #       - ./**/test/**/*.dart
 #       - .gitlab-ci.yml
-
-.projects: &projects
-  parallel:
-    matrix:
-      - PROJECT: multi_window
-      - PROJECT: multi_window_interface
-      - PROJECT: multi_window_linux
-      - PROJECT: multi_window_macos
