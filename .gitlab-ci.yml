@@ -47,6 +47,38 @@ flutter_analyze:
       - ./**/test/**/*.dart
       - .gitlab-ci.yml
 
+pod_lint:
+  image: ruby:2.7-slim-buster
+  stage: lint
+  script:
+    - cd multi_window_macos/macos || exit 1
+    - apt-get update && apt-get install -y git curl unzip
+    - gem install cocoapods -v 1.8.4
+    - adduser --disabled-password --gecos "" cocoapods # Running as root is not allowed for CocoaPods
+    - export RUBYOPT='-W0' # Disable ruby deprecation warnings
+    - su cocoapods -c "pod lib lint --allow-warnings multi_window_macos.podspec"
+  only:
+    refs:
+      - merge_requests
+      - master
+    changes:
+      - multi_window_macos/macos/multi_window_macos.podspec
+      - .gitlab-ci.yml
+
+swift_analyze:
+  image: norionomura/swiftlint:0.43.1_swift-5.4.0
+  stage: lint
+  script:
+    - cd multi_window_macos/macos || exit 1
+    - swiftlint --strict
+  only:
+    refs:
+      - merge_requests
+      - master
+    changes:
+      - multi_window_macos/macos/**/*.swift
+      - .gitlab-ci.yml
+
 # unit_test:
 #   <<: *projects
 #   stage: test

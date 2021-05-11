@@ -3,7 +3,7 @@ import 'package:multi_window_interface/multi_window_interface.dart';
 
 class PlatformNotImplemented extends MultiWindowInterface {
   @override
-  Stream<DataEvent> get events => throw UnimplementedError();
+  Stream<DataEvent> events(String key) => throw UnimplementedError();
 
   @override
   Future<void> create(String key) async => throw UnimplementedError();
@@ -17,4 +17,6 @@ class PlatformNotImplemented extends MultiWindowInterface {
   @override
   Future<void> setTitle(String key, String title) => throw UnimplementedError();
 
+  @override
+  Future<void> emit(String key, data) => throw UnimplementedError();
 }

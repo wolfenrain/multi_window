@@ -21,7 +21,7 @@ abstract class MultiWindowInterface extends PlatformInterface {
 
   MultiWindowInterface() : super(token: _token);
 
-  Stream<DataEvent> get events;
+  Stream<DataEvent> events(String key);
 
   Future<void> create(String key);
 
@@ -30,4 +30,6 @@ abstract class MultiWindowInterface extends PlatformInterface {
   Future<String> getTitle(String key);
 
   Future<void> setTitle(String key, String title);
+
+  Future<void> emit(String key, dynamic data);
 }

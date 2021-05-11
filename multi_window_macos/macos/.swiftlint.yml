@@ -1,0 +1,14 @@
+# See https://realm.github.io/SwiftLint/rule-directory.html for more information
+
+line_length: 240
+
+identifier_name:
+  min_length: 2
+
+type_name:
+  max_length: 50
+
+opt_in_rules:
+  - vertical_whitespace_opening_braces
+  - vertical_whitespace_closing_braces
+  - yoda_condition

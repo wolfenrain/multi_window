@@ -7,12 +7,18 @@ class MultiWindowLinux extends MultiWindowInterface {
   static const MethodChannel _methodChannel =
       const MethodChannel('multi_window_linux');
 
-  static const EventChannel _eventChannel =
-      const EventChannel('multi_window_linux/events');
+  Map<String, EventChannel> _eventChannels = {};
+  Map<String, Stream<DataEvent>> _eventStreams = {};
 
   @override
-  Stream<DataEvent> get events {
-    return _eventChannel.receiveBroadcastStream().map(DataEvent.from);
+  Stream<DataEvent> events(String key) {
+    if (!_eventChannels.containsKey(key)) {
+      _eventChannels[key] = EventChannel('multi_window_macos/events/$key');
+      _eventStreams[key] =
+          _eventChannels[key]!.receiveBroadcastStream().map(DataEvent.from);
+    }
+
+    return _eventStreams[key]!;
   }
 
   @override
@@ -40,6 +46,14 @@ class MultiWindowLinux extends MultiWindowInterface {
     return _methodChannel.invokeMethod('getTitle', {
       'key': key,
       'title': title,
+    });
+  }
+
+  @override
+  Future<void> emit(String key, data) {
+    return _methodChannel.invokeMethod('emit', {
+      'key': key,
+      'data': data,
     });
   }
 }

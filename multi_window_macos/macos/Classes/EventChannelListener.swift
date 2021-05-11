@@ -1,24 +1,22 @@
 import FlutterMacOS
 
 class EventChannelListener: NSObject, FlutterStreamHandler {
-    let plugin: MultiWindowMacosPlugin
+    let key: String
     
-    init(plugin: MultiWindowMacosPlugin) {
-        self.plugin = plugin
+    init(key: String) {
+        self.key = key
         super.init()
     }
     
     func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
-        print("EventChannelListener.onListen => eventChannel attached")
-        
-        // TODO: see if we can use arguments to identify different windows
-
+        print("EventChannelListener.onListen => eventChannel for \(key) attached")
+        MultiWindowMacosPlugin.multiEventSinks[key]?.append(events)
         return nil
     }
 
     func onCancel(withArguments arguments: Any?) -> FlutterError? {
-        print("EventChannelListener.onCancel => eventChannel detached")
-        
+        print("EventChannelListener.onCancel => eventChannel for \(key) detached")
+        // TODO clear from multiEventSinks
         return nil
     }
 }

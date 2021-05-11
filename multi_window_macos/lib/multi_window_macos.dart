@@ -6,17 +6,23 @@ class MultiWindowMacOS extends MultiWindowInterface {
   static const MethodChannel _methodChannel =
       const MethodChannel('multi_window_macos');
 
-  static const EventChannel _eventChannel =
-      const EventChannel('multi_window_macos/events');
+  Map<String, EventChannel> _eventChannels = {};
+  Map<String, Stream<DataEvent>> _eventStreams = {};
 
   @override
-  Stream<DataEvent> get events {
-    return _eventChannel.receiveBroadcastStream().map(DataEvent.from);
+  Stream<DataEvent> events(String key) {
+    if (!_eventChannels.containsKey(key)) {
+      _eventChannels[key] = EventChannel('multi_window_macos/events/$key');
+      _eventStreams[key] =
+          _eventChannels[key]!.receiveBroadcastStream().map(DataEvent.from);
+    }
+
+    return _eventStreams[key]!;
   }
 
   @override
   Future<void> create(String key) async {
-    await _methodChannel.invokeMethod('create', {'key': key});
+    await _methodChannel.invokeMethod<void>('create', {'key': key});
   }
 
   @override
@@ -25,17 +31,26 @@ class MultiWindowMacOS extends MultiWindowInterface {
   }
 
   @override
-  Future<String> getTitle(String key) {
-    return _methodChannel.invokeMethod('getTitle', {
+  Future<String> getTitle(String key) async {
+    final title = await _methodChannel.invokeMethod<String>('getTitle', {
       'key': key,
-    }) as Future<String>;
+    });
+    return title!;
   }
 
   @override
   Future<void> setTitle(String key, String title) {
-    return _methodChannel.invokeMethod('getTitle', {
+    return _methodChannel.invokeMethod<void>('setTitle', {
       'key': key,
       'title': title,
+    });
+  }
+
+  @override
+  Future<void> emit(String key, data) {
+    return _methodChannel.invokeMethod<void>('emit', {
+      'key': key,
+      'data': data,
     });
   }
 }
