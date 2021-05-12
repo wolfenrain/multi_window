@@ -1,3 +1,3 @@
-public class MultiWindow : NSWindow {
+public class MultiWindow: NSWindow {
     var key: String = ""
 }
