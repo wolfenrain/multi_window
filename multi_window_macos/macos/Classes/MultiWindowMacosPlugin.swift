@@ -2,7 +2,7 @@ import Cocoa
 import FlutterMacOS
 
 public class MultiWindowMacosPlugin: NSObject, FlutterPlugin {
-  public static var registerGeneratedPlugins: ((FlutterPluginRegistry) -> Void?
+  public static var registerGeneratedPlugins: ((FlutterPluginRegistry) -> Void)?
 
   static var multiEventSinks: [String: [FlutterEventSink]] = [:]
 
@@ -39,11 +39,11 @@ public class MultiWindowMacosPlugin: NSObject, FlutterPlugin {
   private let registrar: FlutterPluginRegistrar
 
   private var mainWindow: NSWindow {
-    get { NSApp.windows.first(where: {!($0 is MultiWindow)})! }
+    NSApp.windows.first(where: {!($0 is MultiWindow)})!
   }
 
   private var multiWindows: [MultiWindow] {
-    get { NSApp.windows.filter({$0 is MultiWindow}) as! [MultiWindow] }
+    NSApp.windows.filter({$0 is MultiWindow}) as? [MultiWindow] ?? []
   }
 
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
