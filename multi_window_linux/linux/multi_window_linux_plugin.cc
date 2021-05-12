@@ -9,7 +9,10 @@
 
 #include "flutter/generated_plugin_registrant.h"
 
+#include "event_channel_listener.cc"
 #include <cstring>
+#include <string>
+#include <functional>
 
 #define MULTI_WINDOW_LINUX_PLUGIN(obj) \
   (G_TYPE_CHECK_INSTANCE_CAST((obj), multi_window_linux_plugin_get_type(), \
@@ -26,66 +29,71 @@ G_DEFINE_TYPE(MultiWindowLinuxPlugin, multi_window_linux_plugin, g_object_get_ty
 static FlValue* get_args(FlMethodCall* method_call) {
   FlValue* args = fl_method_call_get_args(method_call);
   if (fl_value_get_type(args) != FL_VALUE_TYPE_MAP) {
-    return fl_value_new_map()
+    return fl_value_new_map();
   }
-  return args
+  return args;
 }
 
 gint comp(gpointer pa, gpointer pb) {
-  const GtkWindow *a = pa, *b = pb;
-  GValue g_a_key;
-  GValue g_b_key;
+  // TODO: invalid uninstantiatable type '(null)' in cast to 'GObject'
+  __attribute__((unused)) GObject *a = G_OBJECT(pa), *b = G_OBJECT(pb);
 
-  g_object_get_property(G_OBJECT(a), "key", &g_a_key);
-  g_object_get_property(G_OBJECT(b), "key", &g_b_key);
+  // __attribute__((unused)) gchar *a_key = (gchar *)g_object_get_data(a, "key");
+  // __attribute__((unused)) gchar *b_key = (gchar *)g_object_get_data(b, "key");
 
-  gchar *a_key = g_value_get_string(&g_a_key); 
-  gchar *b_key = g_value_get_string(&g_b_key); 
+  // const gchar *a_key = g_value_get_string(g_a_key); 
+  // const gchar *b_key = g_value_get_string(g_b_key); 
 
-  return strcmp(a_key, b_key);
+  return 1; // strcmp(a_key, b_key);
 }
 
-static GtkWindow* get_window(FlValue* args) {
+static GtkWindow* get_window(MultiWindowLinuxPlugin* self, FlValue* args) {
   const gchar *key = fl_value_get_string(fl_value_get_map_value(args, 0));
   if (key == NULL || key[0] == '\0') {
     return nullptr;
   }
   
+  FlView* view = fl_plugin_registrar_get_view(self->registrar);
   if (strcmp(key, "main") == 0) {
     return GTK_WINDOW(gtk_widget_get_toplevel(GTK_WIDGET(view)));
   }
 
-  GtkWindow *tmp_window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOP_LEVEL));
-  GValue g_key = G_VALUE_INIT;
-  g_value_init(&g_key, G_TYPE_STRING);
-  g_value_set_string(&g_key, key);
-  g_object_set_data(G_OBJECT(tmp_window), "key", &g_key);
+  GtkWindow *tmp_window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
+  g_object_set_data(G_OBJECT(tmp_window), "key", (gpointer)key);
+
+  GList* toplevels = gtk_window_list_toplevels();
+  g_list_foreach(toplevels, (GFunc)g_object_ref, NULL); // TODO might not need
   
-  GtkWindow *window =  g_malloc(sizeof(GTK_WINDOW));
-
-  window = g_list_find_custom(gtk_window_list_toplevels(), &tmp_window, (GCompareFunc) comp);
+  GList* window_result = g_list_find_custom(toplevels, &tmp_window, (GCompareFunc) comp);
+  g_list_foreach(toplevels, (GFunc)g_object_unref, NULL); // TODO might not need
   
-  return window;
+  if (window_result == nullptr) {
+    return nullptr;
+  }
+  return GTK_WINDOW(window_result->data);
+  // return nullptr;
 }
 
-// TODO: seperate file for this with a struct?
-FlMethodErrorResponse* event_listen_cb(FlEventChannel* channel, FlValue* args, gpointer user_data) {
-  // fl_event_channel_send(channel, )
-  return nullptr;
-}
+static void register_event_channel(MultiWindowLinuxPlugin* self, const gchar *key) {
+  EventChannelListener listener = EventChannelListener(
+    key, 
+    [](FlEventChannel* channel, FlValue* args, gpointer user_data) -> FlMethodErrorResponse* {
+      return nullptr;
+    },
+    [](FlEventChannel* channel, FlValue* args, gpointer user_data) -> FlMethodErrorResponse* {
+      return nullptr;
+    }
+  );
 
-FlMethodErrorResponse* event_cancel_cb(FlEventChannel* channel, FlValue* args, gpointer user_data) {
-  return nullptr;
-}
+  std::string name = "multi_window_linux/events/" + std::string(key);
 
-static void register_event_channel(gchar *key) {
   // Setup event channel.
   g_autoptr(FlEventChannel) events_channel = 
-      fl_event_channel_new(fl_plugin_registrar_get_messenger(registrar), 
-                            "multi_window_linux/events/" + key, 
-                            FL_METHOD_CODEC(codec));
-  fl_event_channel_set_stream_handlers(events_channel, event_listen_cb,
-                                        event_cancel_cb, nullptr,
+      fl_event_channel_new(fl_plugin_registrar_get_messenger(self->registrar), 
+                            name.c_str(), 
+                            FL_METHOD_CODEC(fl_standard_method_codec_new()));
+  fl_event_channel_set_stream_handlers(events_channel, listener.on_listen,
+                                        listener.on_cancel, nullptr,
                                         nullptr);
 }
 
@@ -94,7 +102,7 @@ static FlMethodResponse* create(MultiWindowLinuxPlugin* self, FlMethodCall* meth
 
   // TODO: check if we already have a window with given key.
   // Check if we already have a window with given key.
-  if (get_window(args) != nullptr) {
+  if (get_window(self, args) != nullptr) {
     return FL_METHOD_RESPONSE(fl_method_success_response_new(fl_value_new_null()));
   }
 
@@ -104,7 +112,7 @@ static FlMethodResponse* create(MultiWindowLinuxPlugin* self, FlMethodCall* meth
   }
     
   // Registering a channel first, before starting a new flutter project.
-  registerEventChannel(key)
+  register_event_channel(self, key);
 
   FlView* view = fl_plugin_registrar_get_view(self->registrar);
   if (view != nullptr) {
@@ -113,28 +121,8 @@ static FlMethodResponse* create(MultiWindowLinuxPlugin* self, FlMethodCall* meth
 
     GtkWindow* new_window = GTK_WINDOW(gtk_application_window_new(GTK_APPLICATION(application)));
     
-    GValue g_key = G_VALUE_INIT;
-    g_value_init(&g_key, G_TYPE_STRING);
-    g_value_set_string(&g_key, key);
-    g_object_set_data(G_OBJECT(new_window), "key", &g_key);
+    g_object_set_data(G_OBJECT(new_window), "key", (gpointer)key);
     
-    // Use a header bar when running in GNOME as this is the common style used
-    // by applications and is the setup most users will be using (e.g. Ubuntu
-    // desktop).
-    // If running on X and not using GNOME then just use a traditional title bar
-    // in case the window manager does more exotic layout, e.g. tiling.
-    // If running on Wayland assume the header bar will work (may need changing
-    // if future cases occur).
-    gboolean use_header_bar = TRUE;
-#ifdef GDK_WINDOWING_X11
-    GdkScreen *screen = gtk_window_get_screen(new_window);
-    if (GDK_IS_X11_SCREEN(screen)) {
-      const gchar* wm_name = gdk_x11_screen_get_window_manager_name(screen);
-      if (g_strcmp0(wm_name, "GNOME Shell") != 0) {
-        use_header_bar = FALSE;
-      }
-    }
-#endif
     GtkHeaderBar* current_header_bar = (GtkHeaderBar*) gtk_window_get_titlebar(current_window);
 
     if (current_header_bar != nullptr) {
@@ -168,12 +156,12 @@ static FlMethodResponse* create(MultiWindowLinuxPlugin* self, FlMethodCall* meth
   }
 }
 
-static FlMethodResponse* get_title(MultiWindowLinuxPlugin* self, FlMethodCall* method_call) {
+static FlMethodResponse* set_title(MultiWindowLinuxPlugin* self, FlMethodCall* method_call) {
   FlValue* args = get_args(method_call);
 
-  const gchar* key = fl_value_get_string(fl_value_get_map_value(args, 0));
-  if (key == NULL || key[0] == '\0') {
-    return FL_METHOD_RESPONSE(fl_method_error_response_new("MISSING_PARAMS", "Missing 'key' parameter", nullptr));
+  GtkWindow* window = get_window(self, args);
+  if (window == nullptr) {
+    return FL_METHOD_RESPONSE(fl_method_error_response_new("ERROR", "Could not find the window", nullptr));
   }
 
   const gchar* title = fl_value_get_string(fl_value_get_map_value(args, 1));
@@ -181,7 +169,34 @@ static FlMethodResponse* get_title(MultiWindowLinuxPlugin* self, FlMethodCall* m
     return FL_METHOD_RESPONSE(fl_method_error_response_new("MISSING_PARAMS", "Missing 'title' parameter", nullptr));
   }
 
-  return FL_METHOD_RESPONSE(fl_method_success_response_new(fl_value_new_string("title")));
+  GtkHeaderBar* current_header_bar = (GtkHeaderBar*) gtk_window_get_titlebar(window);
+  if (current_header_bar != nullptr) {
+    gtk_header_bar_set_title(current_header_bar, title);
+  }else {
+    gtk_window_set_title(window, title);
+  }
+
+  return FL_METHOD_RESPONSE(fl_method_success_response_new(fl_value_new_null()));
+}
+
+static FlMethodResponse* get_title(MultiWindowLinuxPlugin* self, FlMethodCall* method_call) {
+  FlValue* args = get_args(method_call);
+
+  GtkWindow* window = get_window(self, args);
+  if (window == nullptr) {
+    return FL_METHOD_RESPONSE(fl_method_error_response_new("ERROR", "Could not find the window", nullptr));
+  }
+
+  GtkHeaderBar* current_header_bar = (GtkHeaderBar*) gtk_window_get_titlebar(window);
+  const gchar* title;
+
+  if (current_header_bar != nullptr) {
+    title = gtk_header_bar_get_title(current_header_bar);
+  }else {
+    title = gtk_window_get_title(window);
+  }
+
+  return FL_METHOD_RESPONSE(fl_method_success_response_new(fl_value_new_string(title)));
 }
 
 // Called when a method call is received from Flutter.
@@ -196,6 +211,12 @@ static void multi_window_linux_plugin_handle_method_call(MultiWindowLinuxPlugin*
         fl_value_new_int(g_list_length(gtk_window_list_toplevels()))
       )
     );
+  } else if (strcmp(method, "emit") == 0) {
+    response = FL_METHOD_RESPONSE(fl_method_success_response_new(fl_value_new_null()));
+  } else if (strcmp(method, "getTitle") == 0) {
+    response = get_title(self, method_call);
+  } else if (strcmp(method, "setTitle") == 0) {
+    response = set_title(self, method_call);
   } else if (strcmp(method, "create") == 0) {
     response = create(self, method_call);
   } else {
@@ -239,14 +260,7 @@ void multi_window_linux_plugin_register_with_registrar(FlPluginRegistrar* regist
                                             g_object_ref(plugin),
                                             g_object_unref);
 
-  // Setup event channel.
-  g_autoptr(FlEventChannel) events_channel = 
-      fl_event_channel_new(messenger, 
-                            "multi_window_linux/events", 
-                            FL_METHOD_CODEC(codec));
-  fl_event_channel_set_stream_handlers(events_channel, event_listen_cb,
-                                        event_cancel_cb, nullptr,
-                                        nullptr);
+  register_event_channel(plugin, "main");
 
   g_object_unref(plugin);
 }

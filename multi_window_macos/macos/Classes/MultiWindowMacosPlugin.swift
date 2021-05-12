@@ -86,7 +86,6 @@ public class MultiWindowMacosPlugin: NSObject, FlutterPlugin {
     return result(window.title)
   }
 
-
   public func create(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
     guard let registerGeneratedPlugins = MultiWindowMacosPlugin.registerGeneratedPlugins else {
       return result(FlutterError(code: "ERROR", message: "RegisterGeneratedPlugins was not bound", details: nil))

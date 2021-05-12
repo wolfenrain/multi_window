@@ -4,7 +4,7 @@
 
 ## Features implemented
 - Create new flutter windows
-  - [x] Linux
+  - [ ] Linux
   - [x] macOS
   - [ ] Windows
 - Communicate between windows through EventChannels
@@ -34,6 +34,6 @@
     - [ ] Windows
 - Update window properties on the go
   - title
-    - [ ] Linux
+    - [x] Linux
     - [x] macOS
     - [ ] Windows

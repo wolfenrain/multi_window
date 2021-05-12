@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:multi_window_interface/multi_window_interface.dart';
 import 'package:multi_window_interface/data_event.dart';
@@ -13,7 +12,7 @@ class MultiWindowLinux extends MultiWindowInterface {
   @override
   Stream<DataEvent> events(String key) {
     if (!_eventChannels.containsKey(key)) {
-      _eventChannels[key] = EventChannel('multi_window_macos/events/$key');
+      _eventChannels[key] = EventChannel('multi_window_linux/events/$key');
       _eventStreams[key] =
           _eventChannels[key]!.receiveBroadcastStream().map(DataEvent.from);
     }
@@ -23,27 +22,25 @@ class MultiWindowLinux extends MultiWindowInterface {
 
   @override
   Future<void> create(String key) async {
-    await _methodChannel.invokeMethod('create', {'key': key});
+    await _methodChannel.invokeMethod<void>('create', {'key': key});
   }
 
   @override
   Future<int> count() async {
-    // If running in debug mode we have to remove 1 because Flutter uses a
-    // hidden window.
-    return ((await _methodChannel.invokeMethod('count')) ?? 2) -
-        (kDebugMode ? 1 : 0);
+    return await _methodChannel.invokeMethod<int>('count', {}) ?? 1;
   }
 
   @override
-  Future<String> getTitle(String key) {
-    return _methodChannel.invokeMethod('getTitle', {
+  Future<String> getTitle(String key) async {
+    final title = await _methodChannel.invokeMethod<String>('getTitle', {
       'key': key,
-    }) as Future<String>;
+    });
+    return title!;
   }
 
   @override
   Future<void> setTitle(String key, String title) {
-    return _methodChannel.invokeMethod('getTitle', {
+    return _methodChannel.invokeMethod<void>('setTitle', {
       'key': key,
       'title': title,
     });
@@ -51,7 +48,7 @@ class MultiWindowLinux extends MultiWindowInterface {
 
   @override
   Future<void> emit(String key, data) {
-    return _methodChannel.invokeMethod('emit', {
+    return _methodChannel.invokeMethod<void>('emit', {
       'key': key,
       'data': data,
     });
