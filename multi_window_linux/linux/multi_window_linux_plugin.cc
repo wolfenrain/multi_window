@@ -9,10 +9,13 @@
 
 #include "flutter/generated_plugin_registrant.h"
 
-#include "event_channel_listener.cc"
-#include <cstring>
-#include <string>
+#include "utils.cc"
 #include <functional>
+#include <iostream>
+#include <list>
+#include <map>
+#include <algorithm>
+#include <utility>
 
 #define MULTI_WINDOW_LINUX_PLUGIN(obj) \
   (G_TYPE_CHECK_INSTANCE_CAST((obj), multi_window_linux_plugin_get_type(), \
@@ -24,6 +27,9 @@ struct _MultiWindowLinuxPlugin {
   FlPluginRegistrar* registrar;
 };
 
+std::map<std::string, GtkWindow*> windows = {};
+std::map<std::string, std::list<FlEventChannel*>> multi_event_channels = {};
+
 G_DEFINE_TYPE(MultiWindowLinuxPlugin, multi_window_linux_plugin, g_object_get_type())
 
 static FlValue* get_args(FlMethodCall* method_call) {
@@ -34,82 +40,68 @@ static FlValue* get_args(FlMethodCall* method_call) {
   return args;
 }
 
-gint comp(gpointer pa, gpointer pb) {
-  // TODO: invalid uninstantiatable type '(null)' in cast to 'GObject'
-  __attribute__((unused)) GObject *a = G_OBJECT(pa), *b = G_OBJECT(pb);
-
-  // __attribute__((unused)) gchar *a_key = (gchar *)g_object_get_data(a, "key");
-  // __attribute__((unused)) gchar *b_key = (gchar *)g_object_get_data(b, "key");
-
-  // const gchar *a_key = g_value_get_string(g_a_key); 
-  // const gchar *b_key = g_value_get_string(g_b_key); 
-
-  return 1; // strcmp(a_key, b_key);
-}
-
 static GtkWindow* get_window(MultiWindowLinuxPlugin* self, FlValue* args) {
   const gchar *key = fl_value_get_string(fl_value_get_map_value(args, 0));
   if (key == NULL || key[0] == '\0') {
     return nullptr;
   }
-  
-  FlView* view = fl_plugin_registrar_get_view(self->registrar);
+
   if (strcmp(key, "main") == 0) {
-    return GTK_WINDOW(gtk_widget_get_toplevel(GTK_WIDGET(view)));
+    return windows["main"];
   }
 
-  GtkWindow *tmp_window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
-  g_object_set_data(G_OBJECT(tmp_window), "key", (gpointer)key);
-
-  GList* toplevels = gtk_window_list_toplevels();
-  g_list_foreach(toplevels, (GFunc)g_object_ref, NULL); // TODO might not need
-  
-  GList* window_result = g_list_find_custom(toplevels, &tmp_window, (GCompareFunc) comp);
-  g_list_foreach(toplevels, (GFunc)g_object_unref, NULL); // TODO might not need
-  
-  if (window_result == nullptr) {
-    return nullptr;
+  if (windows.find(std::string(key)) != windows.end()) {
+    return windows[std::string(key)];
   }
-  return GTK_WINDOW(window_result->data);
-  // return nullptr;
+
+  return nullptr;
 }
 
-static void register_event_channel(MultiWindowLinuxPlugin* self, const gchar *key) {
-  EventChannelListener listener = EventChannelListener(
-    key, 
-    [](FlEventChannel* channel, FlValue* args, gpointer user_data) -> FlMethodErrorResponse* {
-      return nullptr;
-    },
-    [](FlEventChannel* channel, FlValue* args, gpointer user_data) -> FlMethodErrorResponse* {
-      return nullptr;
-    }
-  );
+static FlMethodErrorResponse* on_listen(FlEventChannel* eventChannel, FlValue* args, gpointer user_data) {
+  const gchar *key = fl_value_get_string(args);
+  log("EventChannelListener.on_listen => eventChannel for %s attached", key);
 
-  std::string name = "multi_window_linux/events/" + std::string(key);
+  multi_event_channels[key].push_back(eventChannel);
+
+  return nullptr;
+}
+
+static FlMethodErrorResponse* on_cancel(FlEventChannel* eventChannel, FlValue* args, gpointer user_data) {
+  const gchar *key = fl_value_get_string(args);
+  log("EventChannelListener.on_listen => eventChannel for %s attached", key);
+  return nullptr;
+}
+
+static void register_event_channel(MultiWindowLinuxPlugin* self, std::string key) {
+  log("Creating an EventChannel for %s", key.c_str());
+  if (multi_event_channels.find(key) == multi_event_channels.end()) {
+    multi_event_channels[key] = {};
+  }
+
+  std::string name = "multi_window_linux/events/" + key;
 
   // Setup event channel.
   g_autoptr(FlEventChannel) events_channel = 
       fl_event_channel_new(fl_plugin_registrar_get_messenger(self->registrar), 
                             name.c_str(), 
                             FL_METHOD_CODEC(fl_standard_method_codec_new()));
-  fl_event_channel_set_stream_handlers(events_channel, listener.on_listen,
-                                        listener.on_cancel, nullptr,
+  fl_event_channel_set_stream_handlers(events_channel, on_listen,
+                                        on_cancel, nullptr,
                                         nullptr);
 }
 
 static FlMethodResponse* create(MultiWindowLinuxPlugin* self, FlMethodCall* method_call) {
   FlValue* args = get_args(method_call);
 
-  // TODO: check if we already have a window with given key.
-  // Check if we already have a window with given key.
   if (get_window(self, args) != nullptr) {
     return FL_METHOD_RESPONSE(fl_method_success_response_new(fl_value_new_null()));
   }
-
+  
   const gchar* key = fl_value_get_string(fl_value_get_map_value(args, 0));
   if (key == NULL || key[0] == '\0') {
     return FL_METHOD_RESPONSE(fl_method_error_response_new("MISSING_PARAMS", "Missing 'key' parameter", nullptr));
   }
+  log("Creating new window %s", key);
     
   // Registering a channel first, before starting a new flutter project.
   register_event_channel(self, key);
@@ -149,6 +141,8 @@ static FlMethodResponse* create(MultiWindowLinuxPlugin* self, FlMethodCall* meth
     fl_register_plugins(FL_PLUGIN_REGISTRY(view));
 
     gtk_widget_grab_focus(GTK_WIDGET(view));
+    
+    windows[std::string(key)] = new_window;
 
     return FL_METHOD_RESPONSE(fl_method_success_response_new(fl_value_new_null()));
   } else {
@@ -199,6 +193,35 @@ static FlMethodResponse* get_title(MultiWindowLinuxPlugin* self, FlMethodCall* m
   return FL_METHOD_RESPONSE(fl_method_success_response_new(fl_value_new_string(title)));
 }
 
+static void emitEvent(std::string key, std::string type, FlValue* data) {
+  log("Emitting event for %s", key.c_str());
+  for(auto pair : multi_event_channels) {
+    std::string pairKey = pair.first;
+    if (pairKey != key) {
+      continue;
+    }
+    for (auto eventChannel : pair.second) {
+      FlValue* eventData = fl_value_new_map();
+      fl_value_set_string(eventData, "key", fl_value_new_string(key.c_str()));
+      fl_value_set_string(eventData, "type", fl_value_new_string(type.c_str()));
+      fl_value_set_string(eventData, "data", data);
+      fl_event_channel_send(eventChannel, eventData, NULL, NULL);
+    }
+  }
+}
+
+static FlMethodResponse* emit(MultiWindowLinuxPlugin* self, FlMethodCall* method_call) {
+  FlValue* args = get_args(method_call);
+  const gchar *key = fl_value_get_string(fl_value_get_map_value(args, 0));
+  if (key == NULL || key[0] == '\0') {
+    return FL_METHOD_RESPONSE(fl_method_error_response_new("MISSING_PARAMS", "Missing 'key' parameter", nullptr));
+  }
+
+  emitEvent(std::string(key), "user", fl_value_get_map_value(args, 1));
+
+  return FL_METHOD_RESPONSE(fl_method_success_response_new(fl_value_new_null()));
+}
+
 // Called when a method call is received from Flutter.
 static void multi_window_linux_plugin_handle_method_call(MultiWindowLinuxPlugin* self, FlMethodCall* method_call) {
   g_autoptr(FlMethodResponse) response = nullptr;
@@ -208,11 +231,11 @@ static void multi_window_linux_plugin_handle_method_call(MultiWindowLinuxPlugin*
   if (strcmp(method, "count") == 0) {
     response = FL_METHOD_RESPONSE(
       fl_method_success_response_new(
-        fl_value_new_int(g_list_length(gtk_window_list_toplevels()))
+        fl_value_new_int(windows.size())
       )
     );
   } else if (strcmp(method, "emit") == 0) {
-    response = FL_METHOD_RESPONSE(fl_method_success_response_new(fl_value_new_null()));
+    response = emit(self, method_call);
   } else if (strcmp(method, "getTitle") == 0) {
     response = get_title(self, method_call);
   } else if (strcmp(method, "setTitle") == 0) {
@@ -246,8 +269,12 @@ void multi_window_linux_plugin_register_with_registrar(FlPluginRegistrar* regist
   MultiWindowLinuxPlugin* plugin = MULTI_WINDOW_LINUX_PLUGIN(
       g_object_new(multi_window_linux_plugin_get_type(), nullptr));
 
+  // TODO: It gets here for each window.. Which fucks things up?? 
   plugin->registrar = FL_PLUGIN_REGISTRAR(g_object_ref(registrar));
-  
+
+  // Register main window to list.
+  FlView* view = fl_plugin_registrar_get_view(plugin->registrar);
+
   g_autoptr(FlBinaryMessenger) messenger = fl_plugin_registrar_get_messenger(registrar);
   g_autoptr(FlStandardMethodCodec) codec = fl_standard_method_codec_new();
 
@@ -260,7 +287,16 @@ void multi_window_linux_plugin_register_with_registrar(FlPluginRegistrar* regist
                                             g_object_ref(plugin),
                                             g_object_unref);
 
-  register_event_channel(plugin, "main");
+  if (multi_event_channels.size() == 0) {
+    GtkWindow* main_window = GTK_WINDOW(gtk_widget_get_toplevel(GTK_WIDGET(view)));
+    windows["main"] = main_window;
+    register_event_channel(plugin, "main");
+  } else {
+    for(auto pair : multi_event_channels) {
+      std::string key = pair.first;
+      register_event_channel(plugin, key);
+    }
+  }
 
   g_object_unref(plugin);
 }

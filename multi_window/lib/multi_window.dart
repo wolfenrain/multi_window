@@ -4,6 +4,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:multi_window/echo.dart';
 import 'package:multi_window_interface/multi_window_interface.dart';
 import 'package:multi_window_interface/platform_not_implemented.dart';
 import 'package:multi_window_interface/data_event.dart';
@@ -19,6 +20,7 @@ class MultiWindow {
 
   static void init(List<String> args) {
     _ensureInitialized();
+    print('Initializing unknown');
     if (args.isNotEmpty) {
       if (args.first.startsWith('-')) {
         // Xcode adds parameters.
@@ -29,6 +31,7 @@ class MultiWindow {
     } else {
       _currentWindow = MultiWindow._('main');
     }
+    echo('Initialized');
   }
 
   static void _ensureInitialized() {

@@ -9,7 +9,10 @@ class EventChannelListener: NSObject, FlutterStreamHandler {
   }
 
   func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
+    // TODO: Retrieve key from arguments.
+    
     print("EventChannelListener.onListen => eventChannel for \(key) attached")
+    // TODO: get key from arguments? like on linux
     MultiWindowMacosPlugin.multiEventSinks[key]?.append(events)
     return nil
   }

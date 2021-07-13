@@ -8,7 +8,6 @@ set(PLUGIN_NAME "multi_window_linux_plugin")
 
 add_library(${PLUGIN_NAME} SHARED
   "multi_window_linux_plugin.cc"
-  "event_channel_listener.cc"
 )
 apply_standard_settings(${PLUGIN_NAME})
 set_target_properties(${PLUGIN_NAME} PROPERTIES

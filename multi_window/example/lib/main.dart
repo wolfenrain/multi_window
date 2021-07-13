@@ -2,30 +2,34 @@ import 'package:flutter/material.dart';
 import 'package:multi_window/multi_window.dart';
 import 'package:multi_window/echo.dart';
 
-void main(List<String> args) {
+void main(List<String> args) async {
+  WidgetsFlutterBinding.ensureInitialized();
+
   MultiWindow.init(args);
-  runApp(MyApp());
+  await MultiWindow.current.setTitle(MultiWindow.current.key);
+
+  runApp(DemoApp());
 }
 
-class MyApp extends StatelessWidget {
+class DemoApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'MultiWindow Demo',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(),
+      home: MultiWindowDemo(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
+class MultiWindowDemo extends StatefulWidget {
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  _MultiWindowDemoState createState() => _MultiWindowDemoState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MultiWindowDemoState extends State<MultiWindowDemo> {
   var lastEvent;
 
   late MultiWindow currentWindow;
@@ -33,6 +37,8 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
+
+    echo('initState');
 
     currentWindow = MultiWindow.current;
     currentWindow.events.listen((event) {
@@ -55,13 +61,6 @@ class _MyHomePageState extends State<MyHomePage> {
                 Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // TextButton(
-                    //   onPressed: () async {
-                    //     await MultiWindow.create('test_1');
-                    //     setState(() {});
-                    //   },
-                    //   child: Text('Create test 1'),
-                    // ),
                     if (currentWindow.key == 'main')
                       TextButton(
                         onPressed: () async => await emit('test_1'),
@@ -72,16 +71,6 @@ class _MyHomePageState extends State<MyHomePage> {
                         onPressed: () async => await emit('main'),
                         child: Text('Emit to main'),
                       ),
-                    TextButton(
-                      onPressed: () async {
-                        echo('Title was: ${await currentWindow.getTitle()}');
-                        await currentWindow.setTitle(
-                          'My key is: ${currentWindow.key}',
-                        );
-                        echo('Title is: ${await currentWindow.getTitle()}');
-                      },
-                      child: Text('Change title on self'),
-                    ),
                   ],
                 ),
                 Column(
@@ -104,6 +93,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> emit(String key) async {
+    echo("Creating $key");
     final instance = await MultiWindow.create(key);
     instance.events.listen((event) {
       echo('Received event on ${instance.key} instance: $event');

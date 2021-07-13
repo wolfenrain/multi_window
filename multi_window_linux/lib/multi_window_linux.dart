@@ -14,7 +14,7 @@ class MultiWindowLinux extends MultiWindowInterface {
     if (!_eventChannels.containsKey(key)) {
       _eventChannels[key] = EventChannel('multi_window_linux/events/$key');
       _eventStreams[key] =
-          _eventChannels[key]!.receiveBroadcastStream().map(DataEvent.from);
+          _eventChannels[key]!.receiveBroadcastStream(key).map(DataEvent.from);
     }
 
     return _eventStreams[key]!;
