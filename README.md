@@ -4,11 +4,11 @@
 
 ## Features implemented
 - Create new flutter windows
-  - [ ] Linux
+  - [x] Linux
   - [x] macOS
   - [ ] Windows
 - Communicate between windows through EventChannels
-  - [ ] Linux
+  - [x] Linux
   - [x] macOS
   - [ ] Windows
 - Emit user events
