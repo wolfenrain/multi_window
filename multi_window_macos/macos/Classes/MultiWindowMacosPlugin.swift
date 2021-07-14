@@ -14,10 +14,11 @@ public class MultiWindowMacosPlugin: NSObject, FlutterPlugin {
     registrar.addMethodCallDelegate(instance, channel: methodChannel)
   }
 
-  public static func emitEvent(_ key: String, _ type: String, data: Any?) {
+  public static func emitEvent(_ key: String, _ from: String, _ type: String, data: Any?) {
     MultiWindowMacosPlugin.multiEventSinks[key]?.forEach({
       $0([
         "key": key,
+        "from": from,
         "type": type,
         "data": data
       ])
@@ -136,8 +137,11 @@ public class MultiWindowMacosPlugin: NSObject, FlutterPlugin {
     guard let key = args["key"] as? String else {
       return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'key' parameter", details: nil))
     }
+    guard let from = args["from"] as? String else {
+      return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'from' parameter", details: nil))
+    }
 
-    MultiWindowMacosPlugin.emitEvent(key, "user", data: args["data"] ?? nil)
+    MultiWindowMacosPlugin.emitEvent(key, from, "user", data: args["data"] ?? nil)
 
     return result(nil)
   }

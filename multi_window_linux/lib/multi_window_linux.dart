@@ -14,7 +14,7 @@ class MultiWindowLinux extends MultiWindowInterface {
     if (!_eventChannels.containsKey(key)) {
       _eventChannels[key] = EventChannel('multi_window_linux/events/$key');
       _eventStreams[key] =
-          _eventChannels[key]!.receiveBroadcastStream(key).map(DataEvent.from);
+          _eventChannels[key]!.receiveBroadcastStream(key).map(DataEvent.fromMap);
     }
 
     return _eventStreams[key]!;
@@ -47,9 +47,10 @@ class MultiWindowLinux extends MultiWindowInterface {
   }
 
   @override
-  Future<void> emit(String key, data) {
+  Future<void> emit(String key, String from, dynamic data) {
     return _methodChannel.invokeMethod<void>('emit', {
       'key': key,
+      'from': from,
       'data': data,
     });
   }

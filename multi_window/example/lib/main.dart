@@ -55,36 +55,27 @@ class _MultiWindowDemoState extends State<MultiWindowDemo> {
         return Container(
           child: Scaffold(
             appBar: AppBar(title: Text('Running on ${currentWindow.key}')),
-            body: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    if (currentWindow.key == 'main')
-                      TextButton(
-                        onPressed: () async => await emit('test_1'),
-                        child: Text('Emit to test_1'),
-                      ),
-                    if (currentWindow.key != 'main')
-                      TextButton(
-                        onPressed: () async => await emit('main'),
-                        child: Text('Emit to main'),
-                      ),
-                  ],
-                ),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Text('The amount of windows active:'),
-                    Text(
-                      '${snapshot.data ?? -1}',
-                      style: Theme.of(context).textTheme.headline4,
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Text(
+                    'The amount of windows active: ${snapshot.data ?? -1}',
+                  ),
+                  Text('The last event: ${lastEvent ?? 'None'}'),
+                  SizedBox(height: 16),
+                  if (currentWindow.key == 'main')
+                    ElevatedButton(
+                      onPressed: () async => await emit('test_1'),
+                      child: Text('Emit to test_1'),
                     ),
-                    Text('$lastEvent'),
-                  ],
-                ),
-              ],
+                  if (currentWindow.key != 'main')
+                    ElevatedButton(
+                      onPressed: () async => await emit('main'),
+                      child: Text('Emit to main'),
+                    ),
+                ],
+              ),
             ),
           ),
         );

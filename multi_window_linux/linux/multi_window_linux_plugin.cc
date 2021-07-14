@@ -200,7 +200,7 @@ static FlMethodResponse* get_title(MultiWindowLinuxPlugin* self, FlMethodCall* m
   return FL_METHOD_RESPONSE(fl_method_success_response_new(fl_value_new_string(title)));
 }
 
-static void emitEvent(std::string key, std::string type, FlValue* data) {
+static void emitEvent(std::string key, std::string from, std::string type, FlValue* data) {
   log("Emitting event for %s", key.c_str());
   for(auto pair : multi_event_channels) {
     std::string pairKey = pair.first;
@@ -210,6 +210,7 @@ static void emitEvent(std::string key, std::string type, FlValue* data) {
     for (auto eventChannel : pair.second) {
       FlValue* eventData = fl_value_new_map();
       fl_value_set_string(eventData, "key", fl_value_new_string(key.c_str()));
+      fl_value_set_string(eventData, "from", fl_value_new_string(from.c_str()));
       fl_value_set_string(eventData, "type", fl_value_new_string(type.c_str()));
       fl_value_set_string(eventData, "data", data);
       fl_event_channel_send(eventChannel, eventData, NULL, NULL);
@@ -223,8 +224,12 @@ static FlMethodResponse* emit(MultiWindowLinuxPlugin* self, FlMethodCall* method
   if (key == NULL || key[0] == '\0') {
     return FL_METHOD_RESPONSE(fl_method_error_response_new("MISSING_PARAMS", "Missing 'key' parameter", nullptr));
   }
+  const gchar *from = fl_value_get_string(fl_value_get_map_value(args, 0));
+  if (from == NULL || from[0] == '\0') {
+    return FL_METHOD_RESPONSE(fl_method_error_response_new("MISSING_PARAMS", "Missing 'from' parameter", nullptr));
+  }
 
-  emitEvent(std::string(key), "user", fl_value_get_map_value(args, 1));
+  emitEvent(std::string(key), std::string(from), "user", fl_value_get_map_value(args, 1));
 
   return FL_METHOD_RESPONSE(fl_method_success_response_new(fl_value_new_null()));
 }

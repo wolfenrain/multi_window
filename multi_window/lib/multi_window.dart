@@ -19,7 +19,6 @@ class MultiWindow {
   static MultiWindow get current => _currentWindow;
 
   static void init(List<String> args) {
-    _ensureInitialized();
     print('Initializing unknown');
     if (args.isNotEmpty) {
       if (args.first.startsWith('-')) {
@@ -92,6 +91,6 @@ class MultiWindow {
   }
 
   Future<void> emit(dynamic data) async {
-    return MultiWindowInterface.instance.emit(key, data);
+    return MultiWindowInterface.instance.emit(key, current.key, data);
   }
 }

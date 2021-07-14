@@ -31,5 +31,5 @@ abstract class MultiWindowInterface extends PlatformInterface {
 
   Future<void> setTitle(String key, String title);
 
-  Future<void> emit(String key, dynamic data);
+  Future<void> emit(String key, String from, dynamic data);
 }

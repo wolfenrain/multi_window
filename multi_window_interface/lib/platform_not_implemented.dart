@@ -18,5 +18,5 @@ class PlatformNotImplemented extends MultiWindowInterface {
   Future<void> setTitle(String key, String title) => throw UnimplementedError();
 
   @override
-  Future<void> emit(String key, data) => throw UnimplementedError();
+  Future<void> emit(String key, String from, data) => throw UnimplementedError();
 }

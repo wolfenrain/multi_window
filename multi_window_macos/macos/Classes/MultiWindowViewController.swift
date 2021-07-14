@@ -19,9 +19,9 @@ public class MultiWindowViewController: FlutterViewController, NSWindowDelegate 
 
     private func emit(_ data: Any?) {
         if let window = view.window as? MultiWindow {
-            MultiWindowMacosPlugin.emitEvent(window.key, "system", data: data)
+            MultiWindowMacosPlugin.emitEvent(window.key, window.key, "system", data: data)
         } else if view.window != nil {
-            MultiWindowMacosPlugin.emitEvent("main", "system", data: data)
+            MultiWindowMacosPlugin.emitEvent("main", "main", "system", data: data)
         }
     }
 }
