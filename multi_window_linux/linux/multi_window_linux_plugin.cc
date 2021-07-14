@@ -32,6 +32,11 @@ std::map<std::string, std::list<FlEventChannel*>> multi_event_channels = {};
 
 G_DEFINE_TYPE(MultiWindowLinuxPlugin, multi_window_linux_plugin, g_object_get_type())
 
+void on_window_quit(GtkWidget *widget, GdkEvent *event, gpointer data) {
+  // TODO find key by checking windows
+  log("Closing window");
+}
+
 static FlValue* get_args(FlMethodCall* method_call) {
   FlValue* args = fl_method_call_get_args(method_call);
   if (fl_value_get_type(args) != FL_VALUE_TYPE_MAP) {
@@ -112,8 +117,9 @@ static FlMethodResponse* create(MultiWindowLinuxPlugin* self, FlMethodCall* meth
     GtkApplication* application = gtk_window_get_application(current_window);
 
     GtkWindow* new_window = GTK_WINDOW(gtk_application_window_new(GTK_APPLICATION(application)));
-    
-    g_object_set_data(G_OBJECT(new_window), "key", (gpointer)key);
+
+    // Listen to events on the new window.
+    g_signal_connect(new_window, "delete-event", G_CALLBACK(on_window_quit), NULL);
     
     GtkHeaderBar* current_header_bar = (GtkHeaderBar*) gtk_window_get_titlebar(current_window);
 
@@ -141,6 +147,7 @@ static FlMethodResponse* create(MultiWindowLinuxPlugin* self, FlMethodCall* meth
     fl_register_plugins(FL_PLUGIN_REGISTRY(view));
 
     gtk_widget_grab_focus(GTK_WIDGET(view));
+
     
     windows[std::string(key)] = new_window;
 
@@ -291,6 +298,8 @@ void multi_window_linux_plugin_register_with_registrar(FlPluginRegistrar* regist
     GtkWindow* main_window = GTK_WINDOW(gtk_widget_get_toplevel(GTK_WIDGET(view)));
     windows["main"] = main_window;
     register_event_channel(plugin, "main");
+
+    g_signal_connect(main_window, "delete-event", G_CALLBACK(on_window_quit), NULL);
   } else {
     for(auto pair : multi_event_channels) {
       std::string key = pair.first;

@@ -6,6 +6,7 @@ public class MultiWindowViewController: FlutterViewController, NSWindowDelegate 
         emit([
             "event": "windowDisappear"
         ])
+        // TODO: Remove all references
         super.viewWillDisappear()
     }
 
