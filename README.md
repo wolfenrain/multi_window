@@ -5,14 +5,20 @@
 ## Features implemented
 - Create new flutter windows
   - [x] Linux
+    - [ ] Cleanup references to closed windows
   - [x] macOS
+    - [ ] Cleanup references to closed windows
   - [ ] Windows
+    - [ ] Cleanup references to closed windows
 - Communicate between windows through EventChannels
   - [x] Linux
+    - [ ] Cleanup references to closed event channels
   - [x] macOS
+    - [ ] Cleanup references to closed event channels
   - [ ] Windows
+    - [ ] Cleanup references to closed event channels
 - Emit user events
-  - [ ] Linux
+  - [x] Linux
   - [x] macOS
   - [ ] Windows
 - Emit system events
