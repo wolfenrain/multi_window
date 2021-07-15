@@ -32,7 +32,7 @@ std::map<std::string, std::list<FlEventChannel*>> multi_event_channels = {};
 
 G_DEFINE_TYPE(MultiWindowLinuxPlugin, multi_window_linux_plugin, g_object_get_type())
 
-void on_window_quit(GtkWidget *widget, GdkEvent *event, gpointer data) {
+void on_window_quit(GtkWidget* widget, GdkEvent* event, gpointer data) {
   // TODO find key by checking windows
   log("Closing window");
 }
@@ -46,7 +46,7 @@ static FlValue* get_args(FlMethodCall* method_call) {
 }
 
 static GtkWindow* get_window(MultiWindowLinuxPlugin* self, FlValue* args) {
-  const gchar *key = fl_value_get_string(fl_value_get_map_value(args, 0));
+  const gchar* key = fl_value_get_string(fl_value_get_map_value(args, 0));
   if (key == NULL || key[0] == '\0') {
     return nullptr;
   }
@@ -63,7 +63,7 @@ static GtkWindow* get_window(MultiWindowLinuxPlugin* self, FlValue* args) {
 }
 
 static FlMethodErrorResponse* on_listen(FlEventChannel* eventChannel, FlValue* args, gpointer user_data) {
-  const gchar *key = fl_value_get_string(args);
+  const gchar* key = fl_value_get_string(args);
   log("EventChannelListener.on_listen => eventChannel for %s attached", key);
 
   multi_event_channels[key].push_back(eventChannel);
@@ -72,8 +72,9 @@ static FlMethodErrorResponse* on_listen(FlEventChannel* eventChannel, FlValue* a
 }
 
 static FlMethodErrorResponse* on_cancel(FlEventChannel* eventChannel, FlValue* args, gpointer user_data) {
-  const gchar *key = fl_value_get_string(args);
+  const gchar* key = fl_value_get_string(args);
   log("EventChannelListener.on_listen => eventChannel for %s attached", key);
+
   return nullptr;
 }
 
@@ -124,7 +125,7 @@ static FlMethodResponse* create(MultiWindowLinuxPlugin* self, FlMethodCall* meth
     GtkHeaderBar* current_header_bar = (GtkHeaderBar*) gtk_window_get_titlebar(current_window);
 
     if (current_header_bar != nullptr) {
-      GtkHeaderBar *header_bar = GTK_HEADER_BAR(gtk_header_bar_new());
+      GtkHeaderBar* header_bar = GTK_HEADER_BAR(gtk_header_bar_new());
       gtk_widget_show(GTK_WIDGET(header_bar));
       gtk_header_bar_set_title(header_bar, gtk_header_bar_get_title(current_header_bar));
       gtk_header_bar_set_show_close_button(header_bar, gtk_header_bar_get_show_close_button(current_header_bar));
@@ -139,7 +140,7 @@ static FlMethodResponse* create(MultiWindowLinuxPlugin* self, FlMethodCall* meth
     gtk_window_set_default_size(new_window, width, height);
     gtk_widget_show(GTK_WIDGET(new_window));  
 
-    char *args[] = { (char*)key, NULL };
+    char* args[] = { (char*)key, NULL };
     g_autoptr(FlDartProject) project = fl_dart_project_new();
     fl_dart_project_set_dart_entrypoint_arguments(project, args);
 
@@ -223,11 +224,11 @@ static void emitEvent(std::string key, std::string from, std::string type, FlVal
 
 static FlMethodResponse* emit(MultiWindowLinuxPlugin* self, FlMethodCall* method_call) {
   FlValue* args = get_args(method_call);
-  const gchar *key = fl_value_get_string(fl_value_get_map_value(args, 0));
+  const gchar* key = fl_value_get_string(fl_value_get_map_value(args, 0));
   if (key == NULL || key[0] == '\0') {
     return FL_METHOD_RESPONSE(fl_method_error_response_new("MISSING_PARAMS", "Missing 'key' parameter", nullptr));
   }
-  const gchar *from = fl_value_get_string(fl_value_get_map_value(args, 1));
+  const gchar* from = fl_value_get_string(fl_value_get_map_value(args, 1));
   if (from == NULL || from[0] == '\0') {
     return FL_METHOD_RESPONSE(fl_method_error_response_new("MISSING_PARAMS", "Missing 'from' parameter", nullptr));
   }
