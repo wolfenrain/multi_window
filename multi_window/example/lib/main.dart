@@ -1,3 +1,4 @@
+import 'package:flavor_text/flavor_text.dart';
 import 'package:flutter/material.dart';
 import 'package:multi_window/multi_window.dart';
 import 'package:multi_window/echo.dart';
@@ -30,21 +31,79 @@ class MultiWindowDemo extends StatefulWidget {
 }
 
 class _MultiWindowDemoState extends State<MultiWindowDemo> {
-  var lastEvent;
-
   late MultiWindow currentWindow;
+
+  MultiWindow? secondaryWindow;
+
+  List<DataEvent> events = [];
+
+  TextEditingController? controller;
 
   @override
   void initState() {
     super.initState();
 
-    echo('initState');
+    controller = TextEditingController();
 
     currentWindow = MultiWindow.current;
     currentWindow.events.listen((event) {
       echo('Received event on self: $event');
-      setState(() => lastEvent = event);
+      setState(() => events.add(event));
     });
+
+    if (currentWindow.key != "main") {
+      MultiWindow.create('main').then(
+        (value) => setState(() => secondaryWindow = value),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    controller?.dispose();
+    super.dispose();
+  }
+
+  Widget buildConsole(int windowCount) {
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Expanded(
+        child: ListView(
+          children: [
+            for (final event in events)
+              FlavorText(
+                'From <style color="primaryColor">${event.from}</style> to <style color="primaryColor">${event.key}</style> with message <style color="primaryColor">${event.data}</style>',
+              ),
+          ],
+        ),
+      ),
+      Text(
+        'The amount of windows active: $windowCount',
+      ),
+      Form(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Expanded(
+              child: TextFormField(
+                controller: controller,
+                decoration: InputDecoration(
+                  hintText: 'Message',
+                ),
+                onFieldSubmitted: (_) => emit(
+                  currentWindow.key == 'main' ? 'secondary' : 'main',
+                ),
+              ),
+            ),
+            IconButton(
+              onPressed: () async => await emit(
+                currentWindow.key == 'main' ? 'secondary' : 'main',
+              ),
+              icon: Icon(Icons.send),
+            ),
+          ],
+        ),
+      )
+    ]);
   }
 
   @override
@@ -52,44 +111,31 @@ class _MultiWindowDemoState extends State<MultiWindowDemo> {
     return FutureBuilder<int>(
       future: MultiWindow.count(),
       builder: (context, snapshot) {
-        return Container(
-          child: Scaffold(
-            appBar: AppBar(title: Text('Running on ${currentWindow.key}')),
-            body: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Text(
-                    'The amount of windows active: ${snapshot.data ?? -1}',
-                  ),
-                  Text('The last event: ${lastEvent ?? 'None'}'),
-                  SizedBox(height: 16),
-                  if (currentWindow.key == 'main')
-                    ElevatedButton(
-                      onPressed: () async => await emit('test_1'),
-                      child: Text('Emit to test_1'),
-                    ),
-                  if (currentWindow.key != 'main')
-                    ElevatedButton(
-                      onPressed: () async => await emit('main'),
-                      child: Text('Emit to main'),
-                    ),
-                ],
-              ),
-            ),
-          ),
+        return Scaffold(
+          appBar: AppBar(title: Text('Running on ${currentWindow.key}')),
+          body: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: (secondaryWindow == null)
+                  ? ElevatedButton(
+                      onPressed: () async => await create(
+                        currentWindow.key == 'main' ? 'secondary' : 'main',
+                      ),
+                      child: Text('Create secondary window'),
+                    )
+                  : buildConsole(snapshot.data ?? -1)),
         );
       },
     );
   }
 
+  Future<void> create(String key) async {
+    secondaryWindow = await MultiWindow.create(key);
+    setState(() {});
+  }
+
   Future<void> emit(String key) async {
-    echo("Creating $key");
-    final instance = await MultiWindow.create(key);
-    instance.events.listen((event) {
-      echo('Received event on ${instance.key} instance: $event');
-    });
-    echo("Emitting event ${instance.key}");
-    await instance.emit('hello');
+    echo("Emitting event ${secondaryWindow?.key}");
+    await secondaryWindow?.emit(controller?.text);
+    setState(() => controller?.text = '');
   }
 }

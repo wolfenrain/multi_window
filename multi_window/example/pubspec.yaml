@@ -14,6 +14,7 @@ dependencies:
   multi_window:
     path: ../
   cupertino_icons: ^1.0.2
+  flavor_text: ^0.1.0
 
 dev_dependencies:
   flutter_test:

@@ -133,7 +133,10 @@ static FlMethodResponse* create(MultiWindowLinuxPlugin* self, FlMethodCall* meth
       gtk_window_set_title(new_window, gtk_window_get_title(current_window));
     }
 
-    gtk_window_set_default_size(new_window, 1280, 720);
+    gint width;
+    gint height;
+    gtk_window_get_size(current_window, &width, &height);
+    gtk_window_set_default_size(new_window, width, height);
     gtk_widget_show(GTK_WIDGET(new_window));  
 
     char *args[] = { (char*)key, NULL };
@@ -224,12 +227,12 @@ static FlMethodResponse* emit(MultiWindowLinuxPlugin* self, FlMethodCall* method
   if (key == NULL || key[0] == '\0') {
     return FL_METHOD_RESPONSE(fl_method_error_response_new("MISSING_PARAMS", "Missing 'key' parameter", nullptr));
   }
-  const gchar *from = fl_value_get_string(fl_value_get_map_value(args, 0));
+  const gchar *from = fl_value_get_string(fl_value_get_map_value(args, 1));
   if (from == NULL || from[0] == '\0') {
     return FL_METHOD_RESPONSE(fl_method_error_response_new("MISSING_PARAMS", "Missing 'from' parameter", nullptr));
   }
 
-  emitEvent(std::string(key), std::string(from), "user", fl_value_get_map_value(args, 1));
+  emitEvent(std::string(key), std::string(from), "user", fl_value_get_map_value(args, 2));
 
   return FL_METHOD_RESPONSE(fl_method_success_response_new(fl_value_new_null()));
 }
