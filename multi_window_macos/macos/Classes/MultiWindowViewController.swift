@@ -2,10 +2,13 @@ import Foundation
 import FlutterMacOS
 
 public class MultiWindowViewController: FlutterViewController, NSWindowDelegate {
+    var key: String = "main"
+    
     open override func viewWillDisappear() {
         emit([
             "event": "windowDisappear"
         ])
+        
         // TODO: Remove all references
         super.viewWillDisappear()
     }
@@ -16,12 +19,8 @@ public class MultiWindowViewController: FlutterViewController, NSWindowDelegate 
         ])
         super.viewWillAppear()
     }
-
+    
     private func emit(_ data: Any?) {
-        if let window = view.window as? MultiWindow {
-            MultiWindowMacosPlugin.emitEvent(window.key, window.key, "system", data: data)
-        } else if view.window != nil {
-            MultiWindowMacosPlugin.emitEvent("main", "main", "system", data: data)
-        }
+        MultiWindowMacosPlugin.emitEvent(key, key, "system", data: data)
     }
 }

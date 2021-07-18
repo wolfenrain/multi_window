@@ -39,12 +39,8 @@ public class MultiWindowMacosPlugin: NSObject, FlutterPlugin {
 
   private let registrar: FlutterPluginRegistrar
 
-  private var mainWindow: NSWindow {
-    NSApp.windows.first(where: {!($0 is MultiWindow)})!
-  }
-
-  private var multiWindows: [MultiWindow] {
-    NSApp.windows.filter({$0 is MultiWindow}) as? [MultiWindow] ?? []
+  private var multiWindows: [NSWindow] {
+    NSApp.windows.filter({$0.contentViewController is MultiWindowViewController}) as [NSWindow]
   }
 
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
@@ -98,6 +94,7 @@ public class MultiWindowMacosPlugin: NSObject, FlutterPlugin {
     if getWindow(args) != nil {
       return result(nil)
     }
+    let mainWindow = getWindow(["key": "main"])!
 
     guard let key = args["key"] as? String else {
       return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'key' parameter", details: nil))
@@ -110,15 +107,18 @@ public class MultiWindowMacosPlugin: NSObject, FlutterPlugin {
     project.dartEntrypointArguments = [key]
 
     let controller = MultiWindowViewController.init(project: project)
+    controller.key = key
     registerGeneratedPlugins(controller)
+    
+//    TODO: Potential use for custom classes from other plugins?
+//    let x = NSStringFromClass(type(of:mainWindow))
+//    let a = NSClassFromString(x) as? NSWindow.Type
 
-    let window = MultiWindow()
-    window.key = key
+    let window = NSWindow()
     window.styleMask = mainWindow.styleMask
     window.backingType = mainWindow.backingType
-
-    window.setFrameOrigin(mainWindow.frame.origin)
-    window.setContentSize(NSSize(width: 500, height: 500))
+    
+    controller.view.frame = mainWindow.frame
     window.contentViewController = controller
     window.title = mainWindow.title
 
@@ -158,10 +158,7 @@ public class MultiWindowMacosPlugin: NSObject, FlutterPlugin {
       return nil
     }
 
-    if key == "main" {
-      return mainWindow
-    }
-    return multiWindows.first(where: {$0.key == key})
+    return multiWindows.first(where: {($0.contentViewController as! MultiWindowViewController).key == key})
   }
 
   private func registerEventChannel(_ key: String) {
