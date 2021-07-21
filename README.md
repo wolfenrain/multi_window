@@ -1,4 +1,7 @@
-# multi_window
+<h1 align="center">multi_window</h1>
+
+## Development and Contributing
+Interested in contributing? We love merge requests! See the [Contribution](https://gitlab.com/wolfenrain/multi_window/-/tree/master/CONTRIBUTING.md) guidelines.
 
 ## Current state of development
 

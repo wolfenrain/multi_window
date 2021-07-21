@@ -3,7 +3,12 @@
 A Flutter package for easily creating and destroying new windows on Desktop.
 
 ## Features
-- ??
+
+| Feature                     | **MacOS** | **Linux** | **Windows** |
+| --------------------------- | --------- | --------- | ----------- |
+| Creating new windows        |	✔️         | ✔️         |             |
+| Receive window events       |           |           |             |
+| Communicate between windows | ✔️         | ✔️         |             |
 
 ## Getting Started
 
@@ -21,7 +26,7 @@ void main(List<String> args) {
 
 ### Linux Setup
 
-No setup required for Linux.
+No setup is required for Linux.
 
 ### MacOS Setup
 
@@ -61,7 +66,7 @@ class MainFlutterWindow: NSWindow {
     ... // Rest of your code
 ```
 
-## How To Use
+## Usage
 
 To create a new window you can call the `MultiWindow.create` method:
 
