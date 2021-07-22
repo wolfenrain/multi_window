@@ -32,9 +32,11 @@ std::map<std::string, std::list<FlEventChannel*>> multi_event_channels = {};
 
 G_DEFINE_TYPE(MultiWindowLinuxPlugin, multi_window_linux_plugin, g_object_get_type())
 
-void on_window_quit(GtkWidget* widget, GdkEvent* event, gpointer data) {
-  // TODO find key by checking windows
-  log("Closing window");
+gboolean on_window_quit(GtkWidget* widget, GdkEvent* event, gpointer user_data) {
+  // TODO: how to get data out of user_data.
+  log("Closing window, %s", (const char*) user_data);
+  
+  return FALSE;
 }
 
 static FlValue* get_args(FlMethodCall* method_call) {
@@ -103,7 +105,7 @@ static FlMethodResponse* create(MultiWindowLinuxPlugin* self, FlMethodCall* meth
     return FL_METHOD_RESPONSE(fl_method_success_response_new(fl_value_new_null()));
   }
   
-  const gchar* key = fl_value_get_string(fl_value_get_map_value(args, 0));
+  const char* key = fl_value_get_string(fl_value_get_map_value(args, 0));
   if (key == NULL || key[0] == '\0') {
     return FL_METHOD_RESPONSE(fl_method_error_response_new("MISSING_PARAMS", "Missing 'key' parameter", nullptr));
   }
@@ -117,10 +119,11 @@ static FlMethodResponse* create(MultiWindowLinuxPlugin* self, FlMethodCall* meth
     GtkWindow* current_window = GTK_WINDOW(gtk_widget_get_toplevel(GTK_WIDGET(view)));
     GtkApplication* application = gtk_window_get_application(current_window);
 
-    GtkWindow* new_window = GTK_WINDOW(gtk_application_window_new(GTK_APPLICATION(application)));
+    GtkWidget* new_widget = gtk_application_window_new(GTK_APPLICATION(application));
+    GtkWindow* new_window = GTK_WINDOW(new_widget);
 
     // Listen to events on the new window.
-    g_signal_connect(new_window, "delete-event", G_CALLBACK(on_window_quit), NULL);
+    g_signal_connect(new_widget, "delete-event", G_CALLBACK(on_window_quit), (gpointer) key);
     
     GtkHeaderBar* current_header_bar = (GtkHeaderBar*) gtk_window_get_titlebar(current_window);
 

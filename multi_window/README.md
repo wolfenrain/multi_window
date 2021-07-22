@@ -7,8 +7,12 @@ A Flutter package for easily creating and destroying new windows on Desktop.
 | Feature                     | **MacOS** | **Linux** | **Windows** |
 | --------------------------- | --------- | --------- | ----------- |
 | Creating new windows        |	✔️         | ✔️         |             |
-| Receive window events       |           |           |             |
+| Receive window events¹      |           |           |             |
 | Communicate between windows | ✔️         | ✔️         |             |
+
+Notes: 
+1. For more info about implemented events see the [Events table](https://gitlab.com/wolfenrain/multi_window/-/tree/master/CONTRIBUTING.md#events-table).
+
 
 ## Getting Started
 
