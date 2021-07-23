@@ -66,6 +66,7 @@ static GtkWindow* get_window(MultiWindowLinuxPlugin* self, FlValue* args) {
 
 static FlMethodErrorResponse* on_listen(FlEventChannel* eventChannel, FlValue* args, gpointer user_data) {
   const gchar* key = fl_value_get_string(args);
+  // TODO: Check nill
   log("EventChannelListener.on_listen => eventChannel for %s attached", key);
 
   multi_event_channels[key].push_back(eventChannel);

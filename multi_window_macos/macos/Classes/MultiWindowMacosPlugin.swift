@@ -166,6 +166,6 @@ public class MultiWindowMacosPlugin: NSObject, FlutterPlugin {
       MultiWindowMacosPlugin.multiEventSinks[key] = []
     }
     let eventChannel = FlutterEventChannel(name: "multi_window_macos/events/\(key)", binaryMessenger: registrar.messenger)
-    eventChannel.setStreamHandler(EventChannelListener(key: key))
+    eventChannel.setStreamHandler(EventChannelListener())
   }
 }
