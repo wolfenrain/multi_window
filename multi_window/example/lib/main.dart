@@ -2,6 +2,7 @@ import 'package:flavor_text/flavor_text.dart';
 import 'package:flutter/material.dart';
 import 'package:multi_window/multi_window.dart';
 import 'package:multi_window/echo.dart';
+import 'package:multi_window/multi_widget.dart';
 
 void main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,7 +21,10 @@ class DemoApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: MultiWindowDemo(),
+      debugShowCheckedModeBanner: false,
+      home: MultiWidget({
+        'settings': Text('Settings page'),
+      }, fallback: MultiWindowDemo()),
     );
   }
 }
@@ -112,7 +116,20 @@ class _MultiWindowDemoState extends State<MultiWindowDemo> {
       future: MultiWindow.count(),
       builder: (context, snapshot) {
         return Scaffold(
-          appBar: AppBar(title: Text('Running on ${currentWindow.key}')),
+          appBar: AppBar(
+            title: Text('Running on ${currentWindow.key}'),
+            actions: [
+              IconButton(
+                onPressed: () async {
+                  final settingsWindow = await MultiWindow.create(
+                    'settings',
+                    size: Size(200, 200),
+                  );
+                },
+                icon: Icon(Icons.settings),
+              )
+            ],
+          ),
           body: Padding(
               padding: const EdgeInsets.all(8.0),
               child: (secondaryWindow == null)
