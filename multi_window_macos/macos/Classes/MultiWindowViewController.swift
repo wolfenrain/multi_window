@@ -21,7 +21,6 @@ public class MultiWindowViewController: FlutterViewController, NSWindowDelegate 
                 MultiWindowMacosPlugin.multiEventSinks.removeValue(forKey: eventKey)
             }
         }
-        // TODO: Remove all references
     }
     
     private func emit(_ data: Any?) {
