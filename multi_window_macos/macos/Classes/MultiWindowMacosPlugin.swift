@@ -4,8 +4,12 @@ import FlutterMacOS
 public class MultiWindowMacosPlugin: NSObject, FlutterPlugin {
   public static var registerGeneratedPlugins: ((FlutterPluginRegistry) -> Void)?
 
-  static var multiEventSinks: [String: [FlutterEventSink]] = [:]
+  static var multiEventSinks: [String: FlutterEventSink?] = [:]
 
+  private var windows: [NSWindow] {
+    NSApp.windows.filter({$0.contentViewController is MultiWindowViewController})
+  }
+    
   public static func register(with registrar: FlutterPluginRegistrar) {
     let instance = MultiWindowMacosPlugin(registrar)
 
@@ -15,14 +19,16 @@ public class MultiWindowMacosPlugin: NSObject, FlutterPlugin {
   }
 
   public static func emitEvent(_ key: String, _ from: String, _ type: String, data: Any?) {
-    MultiWindowMacosPlugin.multiEventSinks[key]?.forEach({
-      $0([
-        "key": key,
-        "from": from,
-        "type": type,
-        "data": data
-      ])
-    })
+    for (eventKey, eventSink) in multiEventSinks {
+      if eventKey.hasSuffix("/\(key)") {
+        eventSink?([
+          "key": key,
+          "from": from,
+          "type": type,
+          "data": data
+        ])
+      }
+    }
   }
 
   public init(_ registrar: FlutterPluginRegistrar) {
@@ -30,18 +36,17 @@ public class MultiWindowMacosPlugin: NSObject, FlutterPlugin {
     super.init()
 
     // Check if we have a main sink, if not this is the first run.
-    if MultiWindowMacosPlugin.multiEventSinks["main"] == nil {
-        registerEventChannel("main")
+    if MultiWindowMacosPlugin.multiEventSinks.isEmpty {
+      registerEventChannel("main")
     } else {
-        MultiWindowMacosPlugin.multiEventSinks.keys.forEach({registerEventChannel($0)})
+      for (eventKey, _) in MultiWindowMacosPlugin.multiEventSinks {
+        let key = eventKey.split(separator: "/").last!
+        registerEventChannel(String(key))
+      }
     }
   }
 
   private let registrar: FlutterPluginRegistrar
-
-  private var multiWindows: [NSWindow] {
-    NSApp.windows.filter({$0.contentViewController is MultiWindowViewController}) as [NSWindow]
-  }
 
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
     switch call.method {
@@ -109,16 +114,23 @@ public class MultiWindowMacosPlugin: NSObject, FlutterPlugin {
     let controller = MultiWindowViewController.init(project: project)
     controller.key = key
     registerGeneratedPlugins(controller)
-    
-//    TODO: Potential use for custom classes from other plugins?
-//    let x = NSStringFromClass(type(of:mainWindow))
-//    let a = NSClassFromString(x) as? NSWindow.Type
 
     let window = NSWindow()
     window.styleMask = mainWindow.styleMask
     window.backingType = mainWindow.backingType
     
-    controller.view.frame = mainWindow.frame
+    var frame = mainWindow.frame
+    if let size = args["size"] as? [String: Double] {
+      guard let width = size["width"] else {
+        return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'size.width' parameter", details: nil))
+      }
+      guard let height = size["height"] else {
+        return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'size.height' parameter", details: nil))
+      }
+      frame = NSRect(origin: frame.origin, size: CGSize(width: width, height: height))
+    }
+    controller.view.frame = frame
+    
     window.contentViewController = controller
     window.title = mainWindow.title
 
@@ -158,12 +170,12 @@ public class MultiWindowMacosPlugin: NSObject, FlutterPlugin {
       return nil
     }
 
-    return multiWindows.first(where: {($0.contentViewController as! MultiWindowViewController).key == key})
+    return windows.first(where: {($0.contentViewController as! MultiWindowViewController).key == key})
   }
 
   private func registerEventChannel(_ key: String) {
-    if MultiWindowMacosPlugin.multiEventSinks[key] == nil {
-      MultiWindowMacosPlugin.multiEventSinks[key] = []
+    if !MultiWindowMacosPlugin.multiEventSinks.keys.contains("\(key)/\(key)") {
+      MultiWindowMacosPlugin.multiEventSinks["\(key)/\(key)"] = nil as FlutterEventSink?
     }
     let eventChannel = FlutterEventChannel(name: "multi_window_macos/events/\(key)", binaryMessenger: registrar.messenger)
     eventChannel.setStreamHandler(EventChannelListener())

@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/services.dart';
 import 'package:multi_window_interface/multi_window_interface.dart';
 import 'package:multi_window_interface/data_event.dart';
@@ -10,19 +12,31 @@ class MultiWindowMacOS extends MultiWindowInterface {
   Map<String, Stream<DataEvent>> _eventStreams = {};
 
   @override
-  Stream<DataEvent> events(String key) {
+  Stream<DataEvent> events(String key, String creatorKey) {
     if (!_eventChannels.containsKey(key)) {
       _eventChannels[key] = EventChannel('multi_window_macos/events/$key');
-      _eventStreams[key] =
-          _eventChannels[key]!.receiveBroadcastStream(key).map(DataEvent.fromMap);
+      _eventStreams[key] = _eventChannels[key]!
+          .receiveBroadcastStream('$creatorKey/$key')
+          .map(DataEvent.fromMap);
     }
 
     return _eventStreams[key]!;
   }
 
   @override
-  Future<void> create(String key) async {
-    await _methodChannel.invokeMethod<void>('create', {'key': key});
+  Future<void> create(
+    String key, {
+    Size? size,
+  }) async {
+    await _methodChannel.invokeMethod<void>('create', {
+      'key': key,
+      'size': size != null
+          ? {
+              'width': size.width,
+              'height': size.height,
+            }
+          : null,
+    });
   }
 
   @override

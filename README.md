@@ -10,14 +10,14 @@ Interested in contributing? We love merge requests! See the [Contribution](https
   - [x] Linux
     - [ ] Cleanup references to closed windows
   - [x] macOS
-    - [ ] Cleanup references to closed windows
+    - [x] Cleanup references to closed windows
   - [ ] Windows
     - [ ] Cleanup references to closed windows
 - Communicate between windows through EventChannels
   - [x] Linux
     - [ ] Cleanup references to closed event channels
   - [x] macOS
-    - [ ] Cleanup references to closed event channels
+    - [x] Cleanup references to closed event channels
   - [ ] Windows
     - [ ] Cleanup references to closed event channels
 - Emit user events
@@ -25,19 +25,18 @@ Interested in contributing? We love merge requests! See the [Contribution](https
   - [x] macOS
   - [ ] Windows
 - Emit system events
-  - Minimize
-    - [ ] Linux
-    - [x] macOS
-    - [ ] Windows
-  - Maximize
-    - [ ] Linux
-    - [ ] macOS
-    - [ ] Windows
   - Close
     - [ ] Linux
+      - [ ] Remove all references to windows/event channels
+    - [x] macOS
+      - [ ] Remove all references to windows/event channels
+    - [ ] Windows
+      - [ ] Remove all references to windows/event channels
+  - Minimize
+    - [ ] Linux
     - [ ] macOS
     - [ ] Windows
-  - Resize?
+  - Maximize
     - [ ] Linux
     - [ ] macOS
     - [ ] Windows

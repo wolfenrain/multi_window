@@ -6,7 +6,7 @@ class MainFlutterWindow: NSWindow {
   override func awakeFromNib() {
     MultiWindowMacosPlugin.registerGeneratedPlugins = RegisterGeneratedPlugins
 
-    let flutterViewController = MultiWindowViewController.init()
+    let flutterViewController = MultiWindowViewController()
     let windowFrame = self.frame
     self.contentViewController = flutterViewController
     self.setFrame(windowFrame, display: true)

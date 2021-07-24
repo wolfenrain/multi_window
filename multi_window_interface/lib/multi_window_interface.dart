@@ -1,5 +1,7 @@
 library multi_window_interface;
 
+import 'dart:ui';
+
 import 'package:multi_window_interface/data_event.dart';
 import 'package:multi_window_interface/platform_not_implemented.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
@@ -21,15 +23,37 @@ abstract class MultiWindowInterface extends PlatformInterface {
 
   MultiWindowInterface() : super(token: _token);
 
-  Stream<DataEvent> events(String key);
+  /// Setup a EventChannel to the native side for a window identified by [key].
+  ///
+  /// The [creatorKey] is used as a unique value for each instance of a window,
+  /// to ensure the right engine is linking up to the right event channel.
+  /// Should default to the current window's key.
+  Stream<DataEvent> events(String key, String creatorKey);
 
-  Future<void> create(String key);
+  /// Create a new window identified by the given [key].
+  ///
+  /// If there already exists a window with [key] then the native code won't
+  /// create another window.
+  /// 
+  /// An optional [size] can be passed. If none is given it will use the size of
+  /// the main window.
+  Future<void> create(
+    String key, {
+    Size? size,
+  });
 
+  /// Return the count of all created windows.
   Future<int> count();
 
+  /// Get the title on a window identified by the given [key].
   Future<String> getTitle(String key);
 
+  /// Set the [title] on a window identified by the given [key].
   Future<void> setTitle(String key, String title);
 
+  /// Emit [data] to the window identified by the given [key].
+  ///
+  /// The [from] should default to the current window's key.
+  /// [data] can be anything as long as it is a Dart standart data type.
   Future<void> emit(String key, String from, dynamic data);
 }

@@ -51,7 +51,7 @@ override func awakeFromNib() {
 And below that line change the `FlutterViewController` to `MultiWindowViewController`:
 
 ```swift
-let flutterViewController = MultiWindowViewController.init()
+let flutterViewController = MultiWindowViewController()
 ```
 
 Your code should now look something like this: 

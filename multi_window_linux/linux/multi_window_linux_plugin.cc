@@ -66,7 +66,7 @@ static GtkWindow* get_window(MultiWindowLinuxPlugin* self, FlValue* args) {
 
 static FlMethodErrorResponse* on_listen(FlEventChannel* eventChannel, FlValue* args, gpointer user_data) {
   const gchar* key = fl_value_get_string(args);
-  // TODO: Check nill
+  // TODO: Check nill?
   log("EventChannelListener.on_listen => eventChannel for %s attached", key);
 
   multi_event_channels[key].push_back(eventChannel);
@@ -138,6 +138,7 @@ static FlMethodResponse* create(MultiWindowLinuxPlugin* self, FlMethodCall* meth
       gtk_window_set_title(new_window, gtk_window_get_title(current_window));
     }
 
+    // TODO: check if size was passed.
     gint width;
     gint height;
     gtk_window_get_size(current_window, &width, &height);
@@ -215,6 +216,7 @@ static void emitEvent(std::string key, std::string from, std::string type, FlVal
     if (pairKey != key) {
       continue;
     }
+    // TODO: split pairKey to check.
     for (auto eventChannel : pair.second) {
       FlValue* eventData = fl_value_new_map();
       fl_value_set_string(eventData, "key", fl_value_new_string(key.c_str()));
