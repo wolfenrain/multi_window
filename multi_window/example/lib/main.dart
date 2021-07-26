@@ -75,7 +75,7 @@ class _MultiWindowDemoState extends State<MultiWindowDemo> {
           children: [
             for (final event in events)
               FlavorText(
-                'From <style color="primaryColor">${event.from}</style> to <style color="primaryColor">${event.key}</style> with message <style color="primaryColor">${event.data}</style>',
+                'From <style color="primaryColor">${event.from}</style> to <style color="primaryColor">${event.to}</style> with message <style color="primaryColor">${event.data}</style>',
               ),
           ],
         ),
@@ -121,7 +121,7 @@ class _MultiWindowDemoState extends State<MultiWindowDemo> {
             actions: [
               IconButton(
                 onPressed: () async {
-                  final settingsWindow = await MultiWindow.create(
+                  await MultiWindow.create(
                     'settings',
                     size: Size(200, 200),
                   );
@@ -148,7 +148,7 @@ class _MultiWindowDemoState extends State<MultiWindowDemo> {
   Future<void> create(String key) async {
     secondaryWindow = await MultiWindow.create(key);
     secondaryWindow?.events.listen((event) {
-      if (event.type == EventType.system &&
+      if (event.type == DataEventType.system &&
           event.data['event'] == 'windowClose') {
         setState(() {
           secondaryWindow = null;

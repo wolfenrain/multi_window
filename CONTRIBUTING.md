@@ -71,4 +71,4 @@ Reference table of all the events the system events the plugin supports and thei
 
 | Dart Event name | MacOS | Linux | Windows  |
 | --- | --- | --- | --- |
-| windowClose          | [windowWillClose](https://developer.apple.com/documentation/appkit/nswindowdelegate/1419605-windowwillclose) | [delete-event](https://developer.gnome.org/gtk3/stable/GtkWidget.html#GtkWidget-delete-event) | |
+| windowClose | [windowWillClose](https://developer.apple.com/documentation/appkit/nswindowdelegate/1419605-windowwillclose) | [delete-event](https://developer.gnome.org/gtk3/stable/GtkWidget.html#GtkWidget-delete-event) | |

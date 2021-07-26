@@ -55,7 +55,7 @@ class MultiWindow {
   ///
   /// If a window with the given [key] already exists then the returned
   /// [MultiWindow] will be linked to that window.
-  /// 
+  ///
   /// An optional [size] can be passed. If none is given it will use the size of
   /// the main window.
   static Future<MultiWindow> create(
@@ -97,10 +97,12 @@ class MultiWindow {
     _ensureInitialized();
   }
 
+  /// Retrieve the title of this window.
   Future<String> getTitle() {
     return MultiWindowInterface.instance.getTitle(key);
   }
 
+  /// Set the title of this window.
   Future<void> setTitle(String title) async {
     return MultiWindowInterface.instance.setTitle(key, title);
   }
