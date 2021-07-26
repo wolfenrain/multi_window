@@ -54,6 +54,7 @@
         "cinttypes": "cpp",
         "typeinfo": "cpp",
         "list": "cpp",
-        "map": "cpp"
+        "map": "cpp",
+        "sstream": "cpp"
     }
 }

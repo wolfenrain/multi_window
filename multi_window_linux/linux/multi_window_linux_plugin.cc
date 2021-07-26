@@ -28,14 +28,44 @@ struct _MultiWindowLinuxPlugin {
 };
 
 std::map<std::string, GtkWindow*> windows = {};
-std::map<std::string, std::list<FlEventChannel*>> multi_event_channels = {};
+std::map<std::string, FlEventChannel*> multi_event_channels = {};
 
 G_DEFINE_TYPE(MultiWindowLinuxPlugin, multi_window_linux_plugin, g_object_get_type())
 
-gboolean on_window_quit(GtkWidget* widget, GdkEvent* event, gpointer user_data) {
-  // TODO: how to get data out of user_data.
-  log("Closing window, %s", (const char*) user_data);
-  
+static void emitEvent(std::string key, std::string from, std::string type, FlValue* data) {
+  log("Emitting event for %s", key.c_str());
+  for(auto pair : multi_event_channels) {
+    std::string eventKey = pair.first;
+    FlEventChannel* eventChannel = pair.second;
+    if (hasSuffix(eventKey, key) && eventChannel != nullptr) {
+      FlValue* eventData = fl_value_new_map();
+      fl_value_set_string(eventData, "key", fl_value_new_string(key.c_str()));
+      fl_value_set_string(eventData, "from", fl_value_new_string(from.c_str()));
+      fl_value_set_string(eventData, "type", fl_value_new_string(type.c_str()));
+      fl_value_set_string(eventData, "data", data);
+      fl_event_channel_send(eventChannel, eventData, NULL, NULL);
+    }
+  }
+}
+
+static gboolean on_window_quit(GtkWidget* widget, GdkEvent* event, gpointer user_data) {
+  std::string key = std::find_if(std::begin(windows), std::end(windows), [&](const std::pair<std::string, GtkWindow*> &pair) {
+    return GTK_WIDGET(pair.second) == widget;
+  })->first;
+  log("Closing window, %s", key.c_str());
+
+  for(auto pair : multi_event_channels) {
+    std::string eventKey = pair.first;
+    if (eventKey.rfind(key + "/", 0) == 0) {
+      multi_event_channels.erase(eventKey);
+    }
+  }
+
+  windows.erase(key);
+
+  FlValue* eventData = fl_value_new_map();
+  fl_value_set_string(eventData, "event", fl_value_new_string("windowClose"));
+  emitEvent(std::string(key), std::string(key), "system", eventData);
   return FALSE;
 }
 
@@ -66,25 +96,30 @@ static GtkWindow* get_window(MultiWindowLinuxPlugin* self, FlValue* args) {
 
 static FlMethodErrorResponse* on_listen(FlEventChannel* eventChannel, FlValue* args, gpointer user_data) {
   const gchar* key = fl_value_get_string(args);
-  // TODO: Check nill?
+  if (key == NULL || key[0] == '\0') {
+    return fl_method_error_response_new("MISSING_PARAMS", "Missing 'key' parameter", nullptr);
+  }
   log("EventChannelListener.on_listen => eventChannel for %s attached", key);
 
-  multi_event_channels[key].push_back(eventChannel);
-
+  multi_event_channels[key] = eventChannel;
   return nullptr;
 }
 
 static FlMethodErrorResponse* on_cancel(FlEventChannel* eventChannel, FlValue* args, gpointer user_data) {
   const gchar* key = fl_value_get_string(args);
+  if (key == NULL || key[0] == '\0') {
+    return fl_method_error_response_new("MISSING_PARAMS", "Missing 'key' parameter", nullptr);
+  }
   log("EventChannelListener.on_listen => eventChannel for %s attached", key);
 
+  multi_event_channels.erase(key);
   return nullptr;
 }
 
 static void register_event_channel(MultiWindowLinuxPlugin* self, std::string key) {
   log("Creating an EventChannel for %s", key.c_str());
-  if (multi_event_channels.find(key) == multi_event_channels.end()) {
-    multi_event_channels[key] = {};
+  if (multi_event_channels.find(key + "/" + key) == multi_event_channels.end()) {
+    multi_event_channels[key] = nullptr;
   }
 
   std::string name = "multi_window_linux/events/" + key;
@@ -120,11 +155,11 @@ static FlMethodResponse* create(MultiWindowLinuxPlugin* self, FlMethodCall* meth
     GtkWindow* current_window = GTK_WINDOW(gtk_widget_get_toplevel(GTK_WIDGET(view)));
     GtkApplication* application = gtk_window_get_application(current_window);
 
-    GtkWidget* new_widget = gtk_application_window_new(GTK_APPLICATION(application));
-    GtkWindow* new_window = GTK_WINDOW(new_widget);
+    GtkWindow* new_window = GTK_WINDOW(gtk_application_window_new(GTK_APPLICATION(application)));
+    // GtkWindow* new_window = GTK_WINDOW(new_widget);
 
     // Listen to events on the new window.
-    g_signal_connect(new_widget, "delete-event", G_CALLBACK(on_window_quit), (gpointer) key);
+    g_signal_connect(new_window, "delete-event", G_CALLBACK(on_window_quit), NULL);
     
     GtkHeaderBar* current_header_bar = (GtkHeaderBar*) gtk_window_get_titlebar(current_window);
 
@@ -209,25 +244,6 @@ static FlMethodResponse* get_title(MultiWindowLinuxPlugin* self, FlMethodCall* m
   return FL_METHOD_RESPONSE(fl_method_success_response_new(fl_value_new_string(title)));
 }
 
-static void emitEvent(std::string key, std::string from, std::string type, FlValue* data) {
-  log("Emitting event for %s", key.c_str());
-  for(auto pair : multi_event_channels) {
-    std::string pairKey = pair.first;
-    if (pairKey != key) {
-      continue;
-    }
-    // TODO: split pairKey to check.
-    for (auto eventChannel : pair.second) {
-      FlValue* eventData = fl_value_new_map();
-      fl_value_set_string(eventData, "key", fl_value_new_string(key.c_str()));
-      fl_value_set_string(eventData, "from", fl_value_new_string(from.c_str()));
-      fl_value_set_string(eventData, "type", fl_value_new_string(type.c_str()));
-      fl_value_set_string(eventData, "data", data);
-      fl_event_channel_send(eventChannel, eventData, NULL, NULL);
-    }
-  }
-}
-
 static FlMethodResponse* emit(MultiWindowLinuxPlugin* self, FlMethodCall* method_call) {
   FlValue* args = get_args(method_call);
   const gchar* key = fl_value_get_string(fl_value_get_map_value(args, 0));
@@ -291,7 +307,6 @@ void multi_window_linux_plugin_register_with_registrar(FlPluginRegistrar* regist
   MultiWindowLinuxPlugin* plugin = MULTI_WINDOW_LINUX_PLUGIN(
       g_object_new(multi_window_linux_plugin_get_type(), nullptr));
 
-  // TODO: It gets here for each window.. Which fucks things up?? 
   plugin->registrar = FL_PLUGIN_REGISTRAR(g_object_ref(registrar));
 
   // Register main window to list.
@@ -317,7 +332,7 @@ void multi_window_linux_plugin_register_with_registrar(FlPluginRegistrar* regist
     g_signal_connect(main_window, "delete-event", G_CALLBACK(on_window_quit), NULL);
   } else {
     for(auto pair : multi_event_channels) {
-      std::string key = pair.first;
+      std::string key = split(pair.first, std::string("/")).front();
       register_event_channel(plugin, key);
     }
   }
