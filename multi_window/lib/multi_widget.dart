@@ -3,6 +3,7 @@ import 'package:multi_window/multi_window.dart';
 
 /// Helper widget that picks up the right widget based on the [MultiWindow.key].
 class MultiWidget extends StatelessWidget {
+  /// Map of widgets to map between depending on the key.
   final Map<String, Widget> widgets;
 
   /// Optional fallback widget when none of the [widgets] match.

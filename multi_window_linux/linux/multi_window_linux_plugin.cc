@@ -39,7 +39,7 @@ static void emitEvent(std::string key, std::string from, std::string type, FlVal
     FlEventChannel* eventChannel = pair.second;
     if (hasSuffix(eventKey, key) && eventChannel != nullptr) {
       FlValue* eventData = fl_value_new_map();
-      fl_value_set_string(eventData, "key", fl_value_new_string(key.c_str()));
+      fl_value_set_string(eventData, "to", fl_value_new_string(key.c_str()));
       fl_value_set_string(eventData, "from", fl_value_new_string(from.c_str()));
       fl_value_set_string(eventData, "type", fl_value_new_string(type.c_str()));
       fl_value_set_string(eventData, "data", data);
@@ -156,7 +156,6 @@ static FlMethodResponse* create(MultiWindowLinuxPlugin* self, FlMethodCall* meth
     GtkApplication* application = gtk_window_get_application(current_window);
 
     GtkWindow* new_window = GTK_WINDOW(gtk_application_window_new(GTK_APPLICATION(application)));
-    // GtkWindow* new_window = GTK_WINDOW(new_widget);
 
     // Listen to events on the new window.
     g_signal_connect(new_window, "delete-event", G_CALLBACK(on_window_quit), NULL);
@@ -173,10 +172,15 @@ static FlMethodResponse* create(MultiWindowLinuxPlugin* self, FlMethodCall* meth
       gtk_window_set_title(new_window, gtk_window_get_title(current_window));
     }
 
-    // TODO: check if size was passed.
     gint width;
     gint height;
-    gtk_window_get_size(current_window, &width, &height);
+    FlValue* size = fl_value_get_map_value(args, 1);
+    if (size != NULL) {
+      width = fl_value_get_int(fl_value_get_map_value(size, 0));
+      height = fl_value_get_int(fl_value_get_map_value(size, 1));
+    } else {
+      gtk_window_get_size(current_window, &width, &height);
+    }
     gtk_window_set_default_size(new_window, width, height);
     gtk_widget_show(GTK_WIDGET(new_window));  
 

@@ -22,7 +22,7 @@ public class MultiWindowMacosPlugin: NSObject, FlutterPlugin {
     for (eventKey, eventSink) in multiEventSinks {
       if eventKey.hasSuffix("/\(key)") {
         eventSink?([
-          "key": key,
+          "to": key,
           "from": from,
           "type": type,
           "data": data
