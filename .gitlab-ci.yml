@@ -3,7 +3,6 @@ image: cirrusci/flutter:stable
 stages:
   - lint
   - test
-  - publish
 
 .projects: &projects
   parallel:
