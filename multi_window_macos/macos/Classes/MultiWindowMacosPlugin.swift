@@ -9,7 +9,7 @@ public class MultiWindowMacosPlugin: NSObject, FlutterPlugin {
   private var windows: [NSWindow] {
     NSApp.windows.filter({$0.contentViewController is MultiWindowViewController})
   }
-    
+
   public static func register(with registrar: FlutterPluginRegistrar) {
     let instance = MultiWindowMacosPlugin(registrar)
 
@@ -118,7 +118,7 @@ public class MultiWindowMacosPlugin: NSObject, FlutterPlugin {
     let window = NSWindow()
     window.styleMask = mainWindow.styleMask
     window.backingType = mainWindow.backingType
-    
+
     var frame = mainWindow.frame
     if let size = args["size"] as? [String: Double] {
       guard let width = size["width"] else {
@@ -130,7 +130,7 @@ public class MultiWindowMacosPlugin: NSObject, FlutterPlugin {
       frame = NSRect(origin: frame.origin, size: CGSize(width: width, height: height))
     }
     controller.view.frame = frame
-    
+
     window.contentViewController = controller
     window.title = mainWindow.title
 
