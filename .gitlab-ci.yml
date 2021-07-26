@@ -150,7 +150,7 @@ dry_run:
 multi_window_publish:
   <<: *pub_dev_publish
   variables:
-    - PROJECT: "multi_window"
+    PROJECT: "multi_window"
   only:
     refs:
       - /^multi_window-v.*$/
@@ -158,7 +158,7 @@ multi_window_publish:
 multi_window_interface_publish:
   <<: *pub_dev_publish
   variables:
-    - PROJECT: "multi_window_interface"
+    PROJECT: "multi_window_interface"
   only:
     refs:
       - /^multi_window_interface-v.*$/
@@ -166,7 +166,7 @@ multi_window_interface_publish:
 multi_window_linux_publish:
   <<: *pub_dev_publish
   variables:
-    - PROJECT: "multi_window_linux"
+    PROJECT: "multi_window_linux"
   only:
     refs:
       - /^multi_window_linux-v.*$/
@@ -174,7 +174,7 @@ multi_window_linux_publish:
 multi_window_macos_publish:
   <<: *pub_dev_publish
   variables:
-    - PROJECT: "multi_window_macos"
+    PROJECT: "multi_window_macos"
   only:
     refs:
       - /^multi_window_macos-v.*$/
