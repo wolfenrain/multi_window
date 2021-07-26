@@ -121,7 +121,7 @@ class _MultiWindowDemoState extends State<MultiWindowDemo> {
             actions: [
               IconButton(
                 onPressed: () async {
-                  final settingsWindow = await MultiWindow.create(
+                  await MultiWindow.create(
                     'settings',
                     size: Size(200, 200),
                   );
