@@ -101,28 +101,28 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "0.0.1"
+    version: "0.1.0"
   multi_window_interface:
     dependency: transitive
     description:
-      path: "../../multi_window_interface"
-      relative: true
-    source: path
-    version: "0.0.1"
+      name: multi_window_interface
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.1.0"
   multi_window_linux:
     dependency: transitive
     description:
-      path: "../../multi_window_linux"
-      relative: true
-    source: path
-    version: "0.0.1"
+      name: multi_window_linux
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.1.0"
   multi_window_macos:
     dependency: transitive
     description:
-      path: "../../multi_window_macos"
-      relative: true
-    source: path
-    version: "0.0.1"
+      name: multi_window_macos
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.1.0"
   path:
     dependency: transitive
     description:
