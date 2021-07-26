@@ -34,7 +34,7 @@ abstract class MultiWindowInterface extends PlatformInterface {
   ///
   /// If there already exists a window with [key] then the native code won't
   /// create another window.
-  /// 
+  ///
   /// An optional [size] can be passed. If none is given it will use the size of
   /// the main window.
   Future<void> create(

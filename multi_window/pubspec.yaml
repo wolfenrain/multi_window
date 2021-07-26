@@ -1,6 +1,6 @@
 name: multi_window
 description: A new Flutter package project.
-version: 0.0.1
+version: 0.1.0
 author:
 homepage:
 
@@ -11,12 +11,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  multi_window_interface: # ^0.1.0
-    path: ../multi_window_interface
-  multi_window_linux: # ^0.1.0
-    path: ../multi_window_linux
-  multi_window_macos: # ^0.1.0
-    path: ../multi_window_macos
+  multi_window_interface: ^0.1.0
+  multi_window_linux: ^0.1.0
+  multi_window_macos: ^0.1.0
 
 dev_dependencies:
   flutter_test:

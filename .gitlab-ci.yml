@@ -26,8 +26,8 @@ dartdoc:
       - merge_requests
       - master
     changes:
-      - /**/*.dart
-      - /**/README.md
+      - ./**/*.dart
+      - ./**/README.md
       - .gitlab-ci.yml
 
 flutter_analyze:
@@ -43,7 +43,7 @@ flutter_analyze:
       - merge_requests
       - master
     changes:
-      - ./**/lib/**/*.dart
+      - ./**/*.dart
       - ./**/test/**/*.dart
       - .gitlab-ci.yml
 
@@ -62,7 +62,7 @@ pod_lint:
       - merge_requests
       - master
     changes:
-      - multi_window_macos/macos/multi_window_macos.podspec
+      - multi_window_macos/macos/**/*
       - .gitlab-ci.yml
 
 swift_analyze:
@@ -76,7 +76,7 @@ swift_analyze:
       - merge_requests
       - master
     changes:
-      - multi_window_macos/macos/**/*.swift
+      - multi_window_macos/macos/**/*
       - .gitlab-ci.yml
 
 # unit_test:
@@ -94,3 +94,87 @@ swift_analyze:
 #       - ./**/lib/**/*.dart
 #       - ./**/test/**/*.dart
 #       - .gitlab-ci.yml
+
+dry_run:
+  <<: *projects
+  stage: publish
+  script:
+    - cd "${PROJECT}"
+    - flutter pub get
+    - flutter pub publish --dry-run
+  only:
+    refs:
+      - merge_requests
+
+.pub_dev_publish: &pub_dev_publish
+  # https://robertohuertas.com/2019/01/20/publish-flutter-package-with-travis/
+  stage: publish
+  script:
+    - |
+      cd "${PROJECT}"
+      if [ -z "${PUB_DEV_PUBLISH_ACCESS_TOKEN}" ]; then
+        echo "Missing PUB_DEV_PUBLISH_ACCESS_TOKEN environment variable"
+        exit 1
+      fi
+
+      if [ -z "${PUB_DEV_PUBLISH_REFRESH_TOKEN}" ]; then
+        echo "Missing PUB_DEV_PUBLISH_REFRESH_TOKEN environment variable"
+        exit 1
+      fi
+
+      if [ -z "${PUB_DEV_PUBLISH_TOKEN_ENDPOINT}" ]; then
+        echo "Missing PUB_DEV_PUBLISH_TOKEN_ENDPOINT environment variable"
+        exit 1
+      fi
+
+      if [ -z "${PUB_DEV_PUBLISH_EXPIRATION}" ]; then
+        echo "Missing PUB_DEV_PUBLISH_EXPIRATION environment variable"
+        exit 1
+      fi
+
+      cat <<EOF > ~/.pub-cache/credentials.json
+      {
+        "accessToken":"$(echo "${PUB_DEV_PUBLISH_ACCESS_TOKEN}" | base64 -d)",
+        "refreshToken":"$(echo "${PUB_DEV_PUBLISH_REFRESH_TOKEN}" | base64 -d)",
+        "tokenEndpoint":"${PUB_DEV_PUBLISH_TOKEN_ENDPOINT}",
+        "scopes":["https://www.googleapis.com/auth/userinfo.email","openid"],
+        "expiration":${PUB_DEV_PUBLISH_EXPIRATION}
+      }
+      EOF
+    - flutter pub get
+    - flutter pub publish -f
+  except:
+    refs:
+      - branches
+
+multi_window_publish:
+  <<: *pub_dev_publish
+  variables:
+    PROJECT: "multi_window"
+  only:
+    refs:
+      - /^multi_window-v.*$/
+
+multi_window_interface_publish:
+  <<: *pub_dev_publish
+  variables:
+    PROJECT: "multi_window_interface"
+  only:
+    refs:
+      - /^multi_window_interface-v.*$/
+
+multi_window_linux_publish:
+  <<: *pub_dev_publish
+  variables:
+    PROJECT: "multi_window_linux"
+  only:
+    refs:
+      - /^multi_window_linux-v.*$/
+
+multi_window_macos_publish:
+  <<: *pub_dev_publish
+  variables:
+    PROJECT: "multi_window_macos"
+  only:
+    refs:
+      - /^multi_window_macos-v.*$/

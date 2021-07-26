@@ -32,8 +32,8 @@ class MultiWindowLinux extends MultiWindowInterface {
       'key': key,
       'size': size != null
           ? {
-              'width': size.width,
-              'height': size.height,
+              'width': size.width.toInt(),
+              'height': size.height.toInt(),
             }
           : null,
     });
