@@ -26,7 +26,7 @@ dartdoc:
       - merge_requests
       - master
     changes:
-      - ./**/lib/**/*.dart
+      - ./**/*.dart
       - ./**/README.md
       - .gitlab-ci.yml
 
@@ -43,7 +43,7 @@ flutter_analyze:
       - merge_requests
       - master
     changes:
-      - ./**/lib/**/*.dart
+      - ./**/*.dart
       - ./**/test/**/*.dart
       - .gitlab-ci.yml
 
@@ -62,7 +62,7 @@ pod_lint:
       - merge_requests
       - master
     changes:
-      - multi_window_macos/macos/multi_window_macos.podspec
+      - multi_window_macos/macos/**/*
       - .gitlab-ci.yml
 
 swift_analyze:
@@ -76,7 +76,7 @@ swift_analyze:
       - merge_requests
       - master
     changes:
-      - multi_window_macos/macos/**/*.swift
+      - multi_window_macos/macos/**/*
       - .gitlab-ci.yml
 
 # unit_test:
