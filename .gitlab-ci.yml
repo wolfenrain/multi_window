@@ -26,8 +26,8 @@ dartdoc:
       - merge_requests
       - master
     changes:
-      - ./**/lib/**/*.dart
-      - ./**/README.md
+      - /**/*.dart
+      - /**/README.md
       - .gitlab-ci.yml
 
 flutter_analyze:
