@@ -1,6 +1,6 @@
 enum EventType {
-  System,
-  User,
+  system,
+  user,
 }
 
 class DataEvent {
@@ -23,8 +23,8 @@ class DataEvent {
       data['key'],
       data['from'],
       data['type'] != null && data['type'] == 'user'
-          ? EventType.User
-          : EventType.System,
+          ? EventType.user
+          : EventType.system,
       data['data'],
     );
   }

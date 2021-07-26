@@ -147,6 +147,14 @@ class _MultiWindowDemoState extends State<MultiWindowDemo> {
 
   Future<void> create(String key) async {
     secondaryWindow = await MultiWindow.create(key);
+    secondaryWindow?.events.listen((event) {
+      if (event.type == EventType.system &&
+          event.data['event'] == 'windowClose') {
+        setState(() {
+          secondaryWindow = null;
+        });
+      }
+    });
     setState(() {});
   }
 
