@@ -175,7 +175,8 @@ static FlMethodResponse* create(MultiWindowLinuxPlugin* self, FlMethodCall* meth
     gint width;
     gint height;
     FlValue* size = fl_value_get_map_value(args, 1);
-    if (size != NULL) {
+    
+    if (fl_value_get_type(size) == FL_VALUE_TYPE_MAP) {
       width = fl_value_get_int(fl_value_get_map_value(size, 0));
       height = fl_value_get_int(fl_value_get_map_value(size, 1));
     } else {
