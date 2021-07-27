@@ -12,7 +12,7 @@ dependencies:
   flutter:
     sdk: flutter
   multi_window_interface: ^0.1.0
-  multi_window_linux: ^0.1.0
+  multi_window_linux: ^0.1.0+1
   multi_window_macos: ^0.1.0
 
 dev_dependencies:
