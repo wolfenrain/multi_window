@@ -1,6 +1,6 @@
 name: multi_window
 description: A Flutter package for easily creating and destroying new windows on Desktop.
-version: 0.1.0
+version: 0.1.1
 repository: https://gitlab.com/wolfenrain/multi_window
 issue_tracker: https://gitlab.com/wolfenrain/multi_window/issues
 

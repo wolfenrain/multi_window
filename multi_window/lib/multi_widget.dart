@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:multi_window/multi_window.dart';
 
@@ -9,19 +11,31 @@ class MultiWidget extends StatelessWidget {
   /// Optional fallback widget when none of the [widgets] match.
   final Widget? fallback;
 
+  /// Optional fallback widget when the current platform is not supported.
+  final Widget? unsupported;
+
   MultiWidget(
     this.widgets, {
     this.fallback,
+    this.unsupported,
   });
 
   @override
   Widget build(BuildContext context) {
-    if (widgets.containsKey(MultiWindow.current.key)) {
-      return widgets[MultiWindow.current.key]!;
+    if (Platform.isLinux || Platform.isMacOS) {
+      if (widgets.containsKey(MultiWindow.current.key)) {
+        return widgets[MultiWindow.current.key]!;
+      }
+      if (fallback != null) {
+        return fallback!;
+      }
+      throw Exception('No widget found for "${MultiWindow.current.key}');
     }
-    if (fallback != null) {
-      return fallback!;
+    if (unsupported != null) {
+      return unsupported!;
     }
-    throw Exception('No widget found for "${MultiWindow.current.key}');
+    throw Exception('''Platform "${Platform.operatingSystem}" is not supported
+
+Supply a "unsupported" parameter to the MultiWidget constructor to prevent this error.''');
   }
 }
