@@ -40,6 +40,7 @@ abstract class MultiWindowInterface extends PlatformInterface {
   Future<void> create(
     String key, {
     Size? size,
+    String? title,
   });
 
   /// Return the count of all created windows.

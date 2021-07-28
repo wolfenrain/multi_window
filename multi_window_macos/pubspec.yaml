@@ -11,7 +11,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  multi_window_interface: ^0.1.0
+  multi_window_interface: #^0.1.0
+    path: ../multi_window_interface
 
 dev_dependencies:
   flutter_test:

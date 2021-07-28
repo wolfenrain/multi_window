@@ -61,11 +61,16 @@ class MultiWindow {
   static Future<MultiWindow> create(
     String key, {
     Size? size,
+    String? title,
   }) async {
     assert(!key.startsWith('-'), 'Keys cannot start with "-"');
     _ensureInitialized();
 
-    await MultiWindowInterface.instance.create(key, size: size);
+    await MultiWindowInterface.instance.create(
+      key,
+      size: size,
+      title: title,
+    );
     return MultiWindow._(key);
   }
 

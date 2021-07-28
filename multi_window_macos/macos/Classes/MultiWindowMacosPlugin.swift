@@ -119,6 +119,14 @@ public class MultiWindowMacosPlugin: NSObject, FlutterPlugin {
     window.styleMask = mainWindow.styleMask
     window.backingType = mainWindow.backingType
 
+    // Setup title.
+    if let title = args["title"] as? String {
+      window.title = title
+    } else {
+      window.title = mainWindow.title
+    }
+
+    // Setup size.
     var frame = mainWindow.frame
     if let size = args["size"] as? [String: Double] {
       guard let width = size["width"] else {
@@ -132,7 +140,6 @@ public class MultiWindowMacosPlugin: NSObject, FlutterPlugin {
     controller.view.frame = frame
 
     window.contentViewController = controller
-    window.title = mainWindow.title
 
     let windowController = NSWindowController()
     windowController.contentViewController = window.contentViewController

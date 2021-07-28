@@ -8,7 +8,6 @@ void main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
 
   MultiWindow.init(args);
-  await MultiWindow.current.setTitle(MultiWindow.current.key);
 
   runApp(DemoApp());
 }
@@ -46,6 +45,7 @@ class _MultiWindowDemoState extends State<MultiWindowDemo> {
   @override
   void initState() {
     super.initState();
+    MultiWindow.current.setTitle(MultiWindow.current.key);
 
     controller = TextEditingController();
 
@@ -124,6 +124,7 @@ class _MultiWindowDemoState extends State<MultiWindowDemo> {
                   await MultiWindow.create(
                     'settings',
                     size: Size(200, 200),
+                    title: 'Settings?'
                   );
                 },
                 icon: Icon(Icons.settings),
