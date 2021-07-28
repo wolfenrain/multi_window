@@ -58,6 +58,9 @@ class MultiWindow {
   ///
   /// An optional [size] can be passed. If none is given it will use the size of
   /// the main window.
+  ///
+  /// An optional [title] can be passed. If none is given it will use the title
+  /// of the main window.
   static Future<MultiWindow> create(
     String key, {
     Size? size,
