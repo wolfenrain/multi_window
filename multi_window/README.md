@@ -13,7 +13,7 @@ A Flutter package for easily creating and destroying new windows on Desktop.
 | Feature                     | **MacOS** | **Linux** | **Windows** |
 | --------------------------- | --------- | --------- | ----------- |
 | Creating new windows        |	✔️         | ✔️         |             |
-| Receive window events¹      |           |           |             |
+| Receive window events¹      | ✔️         | ✔️         |             |
 | Communicate between windows | ✔️         | ✔️         |             |
 
 Notes: 
@@ -95,6 +95,7 @@ To create a new window you can call the `MultiWindow.create` method:
 final window = await MultiWindow.create(
   'your_unique_key',
   size: Size(100, 100), // Optional size.
+  title: 'Your Title', // Optional title.
 );
 ```
 

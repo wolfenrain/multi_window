@@ -159,23 +159,32 @@ static FlMethodResponse* create(MultiWindowLinuxPlugin* self, FlMethodCall* meth
 
     // Listen to events on the new window.
     g_signal_connect(new_window, "delete-event", G_CALLBACK(on_window_quit), NULL);
-    
-    GtkHeaderBar* current_header_bar = (GtkHeaderBar*) gtk_window_get_titlebar(current_window);
 
+    // Setup title.
+    GtkHeaderBar* current_header_bar = (GtkHeaderBar*) gtk_window_get_titlebar(current_window);
+    const char* title = fl_value_get_string(fl_value_get_map_value(args, 2));
+    if (title == NULL || title[0] == '\0') {
+      if (current_header_bar != nullptr) {
+        title = gtk_header_bar_get_title(current_header_bar);
+      } else {
+        title = gtk_window_get_title(current_window);
+      }
+    }
+    
     if (current_header_bar != nullptr) {
       GtkHeaderBar* header_bar = GTK_HEADER_BAR(gtk_header_bar_new());
       gtk_widget_show(GTK_WIDGET(header_bar));
-      gtk_header_bar_set_title(header_bar, gtk_header_bar_get_title(current_header_bar));
+      gtk_header_bar_set_title(header_bar, title);
       gtk_header_bar_set_show_close_button(header_bar, gtk_header_bar_get_show_close_button(current_header_bar));
       gtk_window_set_titlebar(new_window, GTK_WIDGET(header_bar));
-    }else {
-      gtk_window_set_title(new_window, gtk_window_get_title(current_window));
+    } else {
+      gtk_window_set_title(new_window, title);
     }
 
+    // Setup size.
     gint width;
     gint height;
     FlValue* size = fl_value_get_map_value(args, 1);
-    
     if (fl_value_get_type(size) == FL_VALUE_TYPE_MAP) {
       width = fl_value_get_int(fl_value_get_map_value(size, 0));
       height = fl_value_get_int(fl_value_get_map_value(size, 1));
@@ -196,13 +205,12 @@ static FlMethodResponse* create(MultiWindowLinuxPlugin* self, FlMethodCall* meth
     fl_register_plugins(FL_PLUGIN_REGISTRY(view));
 
     gtk_widget_grab_focus(GTK_WIDGET(view));
-
     
     windows[std::string(key)] = new_window;
 
     return FL_METHOD_RESPONSE(fl_method_success_response_new(fl_value_new_null()));
   } else {
-    return FL_METHOD_RESPONSE(fl_method_success_response_new(fl_value_new_string("error?")));
+    return FL_METHOD_RESPONSE(fl_method_error_response_new("ERROR", "Could not setup FlView", nullptr));
   }
 }
 
@@ -242,7 +250,7 @@ static FlMethodResponse* get_title(MultiWindowLinuxPlugin* self, FlMethodCall* m
 
   if (current_header_bar != nullptr) {
     title = gtk_header_bar_get_title(current_header_bar);
-  }else {
+  } else {
     title = gtk_window_get_title(window);
   }
 

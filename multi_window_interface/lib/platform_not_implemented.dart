@@ -15,6 +15,7 @@ class PlatformNotImplemented extends MultiWindowInterface {
   Future<void> create(
     String key, {
     Size? size,
+    String? title,
   }) async =>
       throw UnimplementedError();
 
