@@ -98,6 +98,7 @@ swift_analyze:
 dry_run:
   <<: *projects
   stage: publish
+  allow_failure: true
   script:
     - cd "${PROJECT}"
     - flutter pub get

@@ -35,11 +35,15 @@ abstract class MultiWindowInterface extends PlatformInterface {
   /// If there already exists a window with [key] then the native code won't
   /// create another window.
   ///
-  /// An optional [size] can be passed. If none is given it will use the size of
-  /// the main window.
+  /// An optional [size] can be passed. If none is given it should use the size
+  /// of the main window.
+  ///
+  /// An optional [title] can be passed. If none is given it should use the
+  /// title of the main window.
   Future<void> create(
     String key, {
     Size? size,
+    String? title,
   });
 
   /// Return the count of all created windows.

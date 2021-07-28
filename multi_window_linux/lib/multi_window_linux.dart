@@ -27,6 +27,7 @@ class MultiWindowLinux extends MultiWindowInterface {
   Future<void> create(
     String key, {
     Size? size,
+    String? title,
   }) async {
     await _methodChannel.invokeMethod<void>('create', {
       'key': key,
@@ -36,6 +37,7 @@ class MultiWindowLinux extends MultiWindowInterface {
               'height': size.height.toInt(),
             }
           : null,
+      'title': title,
     });
   }
 
