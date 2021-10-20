@@ -11,9 +11,12 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  multi_window_interface: ^0.1.1
-  multi_window_linux: ^0.1.1
-  multi_window_macos: ^0.1.0
+  multi_window_interface: #^0.1.1
+    path: ../multi_window_interface
+  multi_window_linux: #^0.1.1
+    path: ../multi_window_linux
+  multi_window_macos: #^0.1.0
+    path: ../multi_window_macos
 
 dev_dependencies:
   flutter_test:

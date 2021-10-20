@@ -273,6 +273,19 @@ static FlMethodResponse* emit(MultiWindowLinuxPlugin* self, FlMethodCall* method
   return FL_METHOD_RESPONSE(fl_method_success_response_new(fl_value_new_null()));
 }
 
+static FlMethodResponse* close(MultiWindowLinuxPlugin* self, FlMethodCall* method_call) {
+  FlValue* args = get_args(method_call);
+
+  GtkWindow* window = get_window(self, args);
+  if (window == nullptr) {
+    return FL_METHOD_RESPONSE(fl_method_error_response_new("ERROR", "Could not find the window", nullptr));
+  }
+
+  gtk_window_close(window);
+
+  return FL_METHOD_RESPONSE(fl_method_success_response_new(fl_value_new_null()));
+}
+
 // Called when a method call is received from Flutter.
 static void multi_window_linux_plugin_handle_method_call(MultiWindowLinuxPlugin* self, FlMethodCall* method_call) {
   g_autoptr(FlMethodResponse) response = nullptr;
@@ -287,6 +300,8 @@ static void multi_window_linux_plugin_handle_method_call(MultiWindowLinuxPlugin*
     );
   } else if (strcmp(method, "emit") == 0) {
     response = emit(self, method_call);
+  } else if (strcmp(method, "close") == 0) {
+    response = close(self, method_call);
   } else if (strcmp(method, "getTitle") == 0) {
     response = get_title(self, method_call);
   } else if (strcmp(method, "setTitle") == 0) {

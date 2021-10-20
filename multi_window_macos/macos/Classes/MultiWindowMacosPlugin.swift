@@ -58,6 +58,8 @@ public class MultiWindowMacosPlugin: NSObject, FlutterPlugin {
       return getTitle(call, result: result)
     case "emit":
       return emit(call, result: result)
+    case "close":
+      return close(call, result: result)
     case "count":
       return result(NSApp.windows.count)
     default:
@@ -126,8 +128,8 @@ public class MultiWindowMacosPlugin: NSObject, FlutterPlugin {
       window.title = mainWindow.title
     }
 
-    // Setup size.
     var frame = mainWindow.frame
+    // Setup size.
     if let size = args["size"] as? [String: Double] {
       guard let width = size["width"] else {
         return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'size.width' parameter", details: nil))
@@ -138,7 +140,55 @@ public class MultiWindowMacosPlugin: NSObject, FlutterPlugin {
       frame = NSRect(origin: frame.origin, size: CGSize(width: width, height: height))
     }
     controller.view.frame = frame
-
+    
+    var origin = NSPoint(
+        x: mainWindow.frame.origin.x + (mainWindow.frame.size.width - frame.size.width) / 2,
+        y: mainWindow.frame.origin.y + mainWindow.frame.size.height /  2
+    )
+    if let alignment = args["alignment"] as? [String: Double] {
+      guard let x = alignment["x"] else {
+        return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'alignment.x' parameter", details: nil))
+      }
+      guard let y = alignment["y"] else {
+        return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'alignment.y' parameter", details: nil))
+      }
+      if ![-1,0,1].contains(x) {
+        return result(FlutterError(code: "ERROR", message: "Value for 'alignment.x' is not 0, 1 or -1", details: nil))
+      }
+      if ![-1,0,1].contains(y) {
+        return result(FlutterError(code: "ERROR", message: "Value for 'alignment.y' is not 0, 1 or -1", details: nil))
+      }
+      
+      // TODO: how about vertical screens?
+      // Using visibleFrame as this takes the Dock and Menubar in account.
+      let screenFrame = mainWindow.screen!.visibleFrame
+      origin.x = {
+        if x == 0 {
+          // center
+          return screenFrame.origin.x + (screenFrame.size.width - frame.size.width) / 2
+        } else if x == 1 {
+          // right
+          return screenFrame.origin.x + screenFrame.size.width - frame.size.width
+        }
+        // left
+        return screenFrame.origin.x
+      }()
+        
+      origin.y = {
+        if y == 0 {
+          // center
+          // TODO: Does not feel like true center (even taking the dock and menu bar in account)
+          return screenFrame.origin.y + (screenFrame.size.height / 2)
+        } else if y == -1 {
+          // top
+          return screenFrame.size.height
+        }
+        // bottom
+        return screenFrame.origin.y
+      }()
+    }
+      
+    window.setFrameOrigin(origin)
     window.contentViewController = controller
 
     let windowController = NSWindowController()
@@ -161,6 +211,17 @@ public class MultiWindowMacosPlugin: NSObject, FlutterPlugin {
     }
 
     MultiWindowMacosPlugin.emitEvent(key, from, "user", data: args["data"] ?? nil)
+
+    return result(nil)
+  }
+
+  public func close(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+    let args = getArgs(call.arguments)
+    guard let window = getWindow(args) else {
+      return result(FlutterError(code: "ERROR", message: "Could not find the window", details: nil))
+    }
+
+    window.close()
 
     return result(nil)
   }
