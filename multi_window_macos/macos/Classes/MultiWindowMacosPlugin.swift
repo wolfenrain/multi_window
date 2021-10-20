@@ -146,16 +146,16 @@ public class MultiWindowMacosPlugin: NSObject, FlutterPlugin {
         y: mainWindow.frame.origin.y + mainWindow.frame.size.height /  2
     )
     if let alignment = args["alignment"] as? [String: Double] {
-      guard let x = alignment["x"] else {
+      guard let alignmentX = alignment["x"] else {
         return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'alignment.x' parameter", details: nil))
       }
-      guard let y = alignment["y"] else {
+      guard let alignmentY = alignment["y"] else {
         return result(FlutterError(code: "MISSING_PARAMS", message: "Missing 'alignment.y' parameter", details: nil))
       }
-      if ![-1,0,1].contains(x) {
+      if ![-1,0,1].contains(alignmentX) {
         return result(FlutterError(code: "ERROR", message: "Value for 'alignment.x' is not 0, 1 or -1", details: nil))
       }
-      if ![-1,0,1].contains(y) {
+      if ![-1,0,1].contains(alignmentY) {
         return result(FlutterError(code: "ERROR", message: "Value for 'alignment.y' is not 0, 1 or -1", details: nil))
       }
       
@@ -163,10 +163,10 @@ public class MultiWindowMacosPlugin: NSObject, FlutterPlugin {
       // Using visibleFrame as this takes the Dock and Menubar in account.
       let screenFrame = mainWindow.screen!.visibleFrame
       origin.x = {
-        if x == 0 {
+        if alignmentX == 0 {
           // center
           return screenFrame.origin.x + (screenFrame.size.width - frame.size.width) / 2
-        } else if x == 1 {
+        } else if alignmentX == 1 {
           // right
           return screenFrame.origin.x + screenFrame.size.width - frame.size.width
         }
@@ -175,11 +175,11 @@ public class MultiWindowMacosPlugin: NSObject, FlutterPlugin {
       }()
         
       origin.y = {
-        if y == 0 {
+        if alignmentY == 0 {
           // center
           // TODO: Does not feel like true center (even taking the dock and menu bar in account)
           return screenFrame.origin.y + (screenFrame.size.height / 2)
-        } else if y == -1 {
+        } else if alignmentY == -1 {
           // top
           return screenFrame.size.height
         }

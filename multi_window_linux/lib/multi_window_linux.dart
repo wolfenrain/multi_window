@@ -42,8 +42,8 @@ class MultiWindowLinux extends MultiWindowInterface {
       'title': title,
       'alignment': alignment != null
           ? {
-              'x': alignment.x,
-              'y': alignment.y,
+              'x': alignment.x.toInt(),
+              'y': alignment.y.toInt(),
             }
           : null,
     });

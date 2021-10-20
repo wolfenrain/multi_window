@@ -44,7 +44,7 @@ class MultiWindowDemo extends StatefulWidget {
 }
 
 class _MultiWindowDemoState extends State<MultiWindowDemo> {
-  late MultiWindow currentWindow;
+  MultiWindow get currentWindow => MultiWindow.current;
 
   MultiWindow? secondaryWindow;
 
@@ -59,7 +59,6 @@ class _MultiWindowDemoState extends State<MultiWindowDemo> {
 
     controller = TextEditingController();
 
-    currentWindow = MultiWindow.current;
     currentWindow.events.listen((event) {
       echo('Received event on self: $event');
       setState(() => events.add(event));

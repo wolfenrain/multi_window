@@ -2,6 +2,8 @@
 //  Generated file. Do not edit.
 //
 
+// clang-format off
+
 #include "generated_plugin_registrant.h"
 
 #include <multi_window_linux/multi_window_linux_plugin.h>
