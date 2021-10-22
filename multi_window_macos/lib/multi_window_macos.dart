@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:multi_window_interface/multi_window_interface.dart';
 import 'package:multi_window_interface/data_event.dart';
@@ -28,6 +29,7 @@ class MultiWindowMacOS extends MultiWindowInterface {
     String key, {
     Size? size,
     String? title,
+    Alignment? alignment,
   }) async {
     await _methodChannel.invokeMethod<void>('create', {
       'key': key,
@@ -38,6 +40,12 @@ class MultiWindowMacOS extends MultiWindowInterface {
             }
           : null,
       'title': title,
+      'alignment': alignment != null
+          ? {
+              'x': alignment.x,
+              'y': alignment.y,
+            }
+          : null,
     });
   }
 
@@ -68,6 +76,13 @@ class MultiWindowMacOS extends MultiWindowInterface {
       'key': key,
       'from': from,
       'data': data,
+    });
+  }
+
+  @override
+  Future<void> close(String key) {
+    return _methodChannel.invokeMethod<void>('close', {
+      'key': key,
     });
   }
 }

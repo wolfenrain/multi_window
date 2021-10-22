@@ -2,6 +2,7 @@ library multi_window_interface;
 
 import 'dart:ui';
 
+import 'package:flutter/material.dart';
 import 'package:multi_window_interface/data_event.dart';
 import 'package:multi_window_interface/platform_not_implemented.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
@@ -40,10 +41,15 @@ abstract class MultiWindowInterface extends PlatformInterface {
   ///
   /// An optional [title] can be passed. If none is given it should use the
   /// title of the main window.
+  ///
+  /// The [alignment] can be used to position the created window on the screen.
+  /// If none is passed it should be centered on top of the window that will
+  /// create this window.
   Future<void> create(
     String key, {
     Size? size,
     String? title,
+    Alignment? alignment,
   });
 
   /// Return the count of all created windows.
@@ -60,4 +66,6 @@ abstract class MultiWindowInterface extends PlatformInterface {
   /// The [from] should default to the current window's key.
   /// [data] can be anything as long as it is a Dart standart data type.
   Future<void> emit(String key, String from, dynamic data);
+
+  Future<void> close(String key);
 }

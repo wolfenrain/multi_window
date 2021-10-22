@@ -23,6 +23,16 @@ class DemoApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       home: MultiWidget({
         'settings': Text('Settings page'),
+        'topLeft': Text('topLeft'),
+        'topCenter': Text('topCenter'),
+        'topRight': Text('topRight'),
+        'bottomLeft': Text('bottomLeft'),
+        'bottomCenter': Text('bottomCenter'),
+        'bottomRight': Text('bottomRight'),
+        'centerLeft': Text('centerLeft'),
+        'center': Text('center'),
+        'centerRight': Text('centerRight'),
+        'noAlignment': Text('noAlignment'),
       }, fallback: MultiWindowDemo()),
     );
   }
@@ -34,7 +44,7 @@ class MultiWindowDemo extends StatefulWidget {
 }
 
 class _MultiWindowDemoState extends State<MultiWindowDemo> {
-  late MultiWindow currentWindow;
+  MultiWindow get currentWindow => MultiWindow.current;
 
   MultiWindow? secondaryWindow;
 
@@ -49,7 +59,6 @@ class _MultiWindowDemoState extends State<MultiWindowDemo> {
 
     controller = TextEditingController();
 
-    currentWindow = MultiWindow.current;
     currentWindow.events.listen((event) {
       echo('Received event on self: $event');
       setState(() => events.add(event));
@@ -80,9 +89,7 @@ class _MultiWindowDemoState extends State<MultiWindowDemo> {
           ],
         ),
       ),
-      Text(
-        'The amount of windows active: $windowCount',
-      ),
+      Text('The amount of windows active: $windowCount'),
       Form(
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -90,16 +97,14 @@ class _MultiWindowDemoState extends State<MultiWindowDemo> {
             Expanded(
               child: TextFormField(
                 controller: controller,
-                decoration: InputDecoration(
-                  hintText: 'Message',
-                ),
+                decoration: InputDecoration(hintText: 'Message'),
                 onFieldSubmitted: (_) => emit(
                   currentWindow.key == 'main' ? 'secondary' : 'main',
                 ),
               ),
             ),
             IconButton(
-              onPressed: () async => await emit(
+              onPressed: () => emit(
                 currentWindow.key == 'main' ? 'secondary' : 'main',
               ),
               icon: Icon(Icons.send),
@@ -120,22 +125,81 @@ class _MultiWindowDemoState extends State<MultiWindowDemo> {
             title: Text('Running on ${currentWindow.key}'),
             actions: [
               IconButton(
-                onPressed: () async {
-                  await MultiWindow.create(
-                    'settings',
-                    size: Size(200, 200),
-                    title: 'Settings?'
+                onPressed: currentWindow.close,
+                icon: Icon(Icons.close),
+              ),
+              IconButton(
+                onPressed: () {
+                  final size = Size(300, 300);
+                  MultiWindow.create(
+                    'topLeft',
+                    size: size,
+                    title: 'Top Left',
+                    alignment: Alignment.topLeft,
+                  );
+                  MultiWindow.create(
+                    'topCenter',
+                    size: size,
+                    title: 'Top Center',
+                    alignment: Alignment.topCenter,
+                  );
+                  MultiWindow.create(
+                    'topRight',
+                    size: size,
+                    title: 'Top Right',
+                    alignment: Alignment.topRight,
+                  );
+                  MultiWindow.create(
+                    'bottomLeft',
+                    size: size,
+                    title: 'Bottom Left',
+                    alignment: Alignment.bottomLeft,
+                  );
+                  MultiWindow.create(
+                    'bottomCenter',
+                    size: size,
+                    title: 'Bottom Center',
+                    alignment: Alignment.bottomCenter,
+                  );
+                  MultiWindow.create(
+                    'bottomRight',
+                    size: size,
+                    title: 'Bottom Right',
+                    alignment: Alignment.bottomRight,
+                  );
+                  MultiWindow.create(
+                    'centerLeft',
+                    size: size,
+                    title: 'Center Left',
+                    alignment: Alignment.centerLeft,
+                  );
+                  MultiWindow.create(
+                    'center',
+                    size: size,
+                    title: 'Center',
+                    alignment: Alignment.center,
+                  );
+                  MultiWindow.create(
+                    'centerRight',
+                    size: size,
+                    title: 'Center Right',
+                    alignment: Alignment.centerRight,
+                  );
+                  MultiWindow.create(
+                    'noAlignment',
+                    size: size,
+                    title: 'No Alignment',
                   );
                 },
-                icon: Icon(Icons.settings),
-              )
+                icon: Icon(Icons.grid_view),
+              ),
             ],
           ),
           body: Padding(
               padding: const EdgeInsets.all(8.0),
-              child: (secondaryWindow == null)
+              child: secondaryWindow == null
                   ? ElevatedButton(
-                      onPressed: () async => await create(
+                      onPressed: () => create(
                         currentWindow.key == 'main' ? 'secondary' : 'main',
                       ),
                       child: Text('Create secondary window'),
@@ -147,7 +211,10 @@ class _MultiWindowDemoState extends State<MultiWindowDemo> {
   }
 
   Future<void> create(String key) async {
-    secondaryWindow = await MultiWindow.create(key);
+    secondaryWindow = await MultiWindow.create(
+      key,
+      alignment: Alignment.topLeft,
+    );
     secondaryWindow?.events.listen((event) {
       if (event.type == DataEventType.system &&
           event.data['event'] == 'windowClose') {

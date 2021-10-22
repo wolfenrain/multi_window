@@ -153,6 +153,15 @@ static FlMethodResponse* create(MultiWindowLinuxPlugin* self, FlMethodCall* meth
   FlView* view = fl_plugin_registrar_get_view(self->registrar);
   if (view != nullptr) {
     GtkWindow* current_window = GTK_WINDOW(gtk_widget_get_toplevel(GTK_WIDGET(view)));
+    // Retrieve current window data
+    gint current_window_x;
+    gint current_window_y;
+    gint current_window_width;
+    gint current_window_height;
+    
+    gtk_window_get_position(current_window, &current_window_x, &current_window_y);
+    gtk_window_get_size(current_window, &current_window_width, &current_window_height);
+
     GtkApplication* application = gtk_window_get_application(current_window);
 
     GtkWindow* new_window = GTK_WINDOW(gtk_application_window_new(GTK_APPLICATION(application)));
@@ -192,6 +201,46 @@ static FlMethodResponse* create(MultiWindowLinuxPlugin* self, FlMethodCall* meth
       gtk_window_get_size(current_window, &width, &height);
     }
     gtk_window_set_default_size(new_window, width, height);
+
+    // Setup alignment.
+    gint position_x = current_window_x + (current_window_width - width) / 2;
+    gint position_y = current_window_y + (current_window_height - height) / 2;
+    
+    FlValue* alignment = fl_value_get_map_value(args, 3);
+    if (fl_value_get_type(alignment) == FL_VALUE_TYPE_MAP) {
+      gint alignment_x = fl_value_get_int(fl_value_get_map_value(alignment, 0));
+      gint alignment_y = fl_value_get_int(fl_value_get_map_value(alignment, 1));
+      
+      GdkWindow* gdk_current_window = gtk_widget_get_window(GTK_WIDGET(current_window));
+      GdkMonitor* monitor = gdk_display_get_monitor_at_window(gdk_window_get_display(gdk_current_window), gdk_current_window);
+      GdkRectangle monitor_frame;
+      gdk_monitor_get_geometry(monitor, &monitor_frame);
+
+      if (alignment_x == 0) {
+        // center
+        position_x = monitor_frame.x + (monitor_frame.width - width) / 2;
+      } else if (alignment_x == 1){
+        // right
+        position_x = monitor_frame.x +  monitor_frame.width - width;
+      } else {
+        // left
+        position_x = monitor_frame.x;
+      }
+
+      if (alignment_y == 0) {
+        // center
+        position_y = monitor_frame.y + (monitor_frame.height - height) / 2;
+      } else if (alignment_y == 1){
+        // bottom
+        position_y = monitor_frame.y +  monitor_frame.height - height;
+      } else {
+        // top
+        position_y = monitor_frame.y;
+      }
+    }
+    gtk_window_set_gravity(new_window, GDK_GRAVITY_NORTH_WEST);
+    gtk_window_move(new_window, position_x, position_y);
+
     gtk_widget_show(GTK_WIDGET(new_window));  
 
     char* args[] = { (char*)key, NULL };
@@ -273,6 +322,19 @@ static FlMethodResponse* emit(MultiWindowLinuxPlugin* self, FlMethodCall* method
   return FL_METHOD_RESPONSE(fl_method_success_response_new(fl_value_new_null()));
 }
 
+static FlMethodResponse* close(MultiWindowLinuxPlugin* self, FlMethodCall* method_call) {
+  FlValue* args = get_args(method_call);
+
+  GtkWindow* window = get_window(self, args);
+  if (window == nullptr) {
+    return FL_METHOD_RESPONSE(fl_method_error_response_new("ERROR", "Could not find the window", nullptr));
+  }
+
+  gtk_window_close(window);
+
+  return FL_METHOD_RESPONSE(fl_method_success_response_new(fl_value_new_null()));
+}
+
 // Called when a method call is received from Flutter.
 static void multi_window_linux_plugin_handle_method_call(MultiWindowLinuxPlugin* self, FlMethodCall* method_call) {
   g_autoptr(FlMethodResponse) response = nullptr;
@@ -287,12 +349,16 @@ static void multi_window_linux_plugin_handle_method_call(MultiWindowLinuxPlugin*
     );
   } else if (strcmp(method, "emit") == 0) {
     response = emit(self, method_call);
+  } else if (strcmp(method, "close") == 0) {
+    response = close(self, method_call);
   } else if (strcmp(method, "getTitle") == 0) {
     response = get_title(self, method_call);
   } else if (strcmp(method, "setTitle") == 0) {
     response = set_title(self, method_call);
   } else if (strcmp(method, "create") == 0) {
     response = create(self, method_call);
+  } else if (strcmp(method, "close") == 0) {
+    response = close(self, method_call);
   } else {
     response = FL_METHOD_RESPONSE(fl_method_not_implemented_response_new());
   }
