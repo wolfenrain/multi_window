@@ -77,23 +77,23 @@ packages:
   multi_window_interface:
     dependency: "direct main"
     description:
-      path: "../multi_window_interface"
-      relative: true
-    source: path
+      name: multi_window_interface
+      url: "https://pub.dartlang.org"
+    source: hosted
     version: "0.1.1"
   multi_window_linux:
     dependency: "direct main"
     description:
-      path: "../multi_window_linux"
-      relative: true
-    source: path
+      name: multi_window_linux
+      url: "https://pub.dartlang.org"
+    source: hosted
     version: "0.1.1"
   multi_window_macos:
     dependency: "direct main"
     description:
-      path: "../multi_window_macos"
-      relative: true
-    source: path
+      name: multi_window_macos
+      url: "https://pub.dartlang.org"
+    source: hosted
     version: "0.1.1"
   path:
     dependency: transitive

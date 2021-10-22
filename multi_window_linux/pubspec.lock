@@ -77,9 +77,9 @@ packages:
   multi_window_interface:
     dependency: "direct main"
     description:
-      path: "../multi_window_interface"
-      relative: true
-    source: path
+      name: multi_window_interface
+      url: "https://pub.dartlang.org"
+    source: hosted
     version: "0.1.1"
   path:
     dependency: transitive
