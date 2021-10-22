@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:flutter/material.dart';
 import 'package:multi_window_interface/data_event.dart';
 import 'package:multi_window_interface/multi_window_interface.dart';
 
@@ -16,6 +17,7 @@ class PlatformNotImplemented extends MultiWindowInterface {
     String key, {
     Size? size,
     String? title,
+    Alignment? alignment,
   }) async =>
       throw UnimplementedError();
 
@@ -31,4 +33,7 @@ class PlatformNotImplemented extends MultiWindowInterface {
   @override
   Future<void> emit(String key, String from, data) =>
       throw UnimplementedError();
+
+  @override
+  Future<void> close(String key) => throw UnimplementedError();
 }

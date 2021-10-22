@@ -1,6 +1,6 @@
 name: multi_window_linux
 description: The Linux implementation for the multi_window plugin.
-version: 0.1.1
+version: 0.2.0
 repository: https://gitlab.com/wolfenrain/multi_window
 issue_tracker: https://gitlab.com/wolfenrain/multi_window/issues
 
@@ -11,7 +11,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  multi_window_interface: ^0.1.1
+  multi_window_interface: ^0.2.0
 
 dev_dependencies:
   flutter_test:

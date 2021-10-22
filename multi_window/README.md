@@ -2,21 +2,24 @@
 [![coverage report](https://gitlab.com/wolfenrain/multi_window/badges/master/coverage.svg)](https://gitlab.com/wolfenrain/multi_window/-/commits/master)
 [![pipeline status](https://gitlab.com/wolfenrain/multi_window/badges/master/pipeline.svg)](https://gitlab.com/wolfenrain/multi_window/-/commits/master)
 [![dependencies](https://img.shields.io/librariesio/release/pub/multi_window?label=dependencies)](https://gitlab.com/wolfenrain/multi_window/-/blob/master/multi_window/pubspec.yaml)
+
 <h1 align="center">multi_window</h1>
 
-A Flutter package for easily creating and destroying new windows on Desktop.
+A package for adding multi window support to Flutter on Desktop.
 
-**NOTE**: This plugin is still under heavy development, as long as v1 hasn't been reach expect breaking changes left and right.
+**WARNING**: This is an experimental package and is under heavy development. No guarantees can be giving that the API will stay the same.
 
 ## Features
 
 | Feature                     | **MacOS** | **Linux** | **Windows** |
 | --------------------------- | --------- | --------- | ----------- |
-| Creating new windows        |	✔️         | ✔️         |             |
-| Receive window events¹      | ✔️         | ✔️         |             |
-| Communicate between windows | ✔️         | ✔️         |             |
+| Creating new windows        | ✔️        | ✔️        |             |
+| Closing existing windows    | ✔️        | ✔️        |             |
+| Receive window events¹      | ✔️        | ✔️        |             |
+| Communicate between windows | ✔️        | ✔️        |             |
 
-Notes: 
+Notes:
+
 1. For more info about implemented events see the [Events table](https://gitlab.com/wolfenrain/multi_window/-/tree/master/CONTRIBUTING.md#events-table).
 
 ## Getting Started
@@ -50,7 +53,7 @@ Then add the following line as the first line inside the `awakeFromNib()` functi
 
 ```swift
 override func awakeFromNib() {
-  MultiWindowMacosPlugin.registerGeneratedPlugins = RegisterGeneratedPlugins // Add this line.
+    MultiWindowMacosPlugin.registerGeneratedPlugins = RegisterGeneratedPlugins // Add this line.
 ```
 
 And below that line change the `FlutterViewController` to `MultiWindowViewController`:
@@ -59,49 +62,62 @@ And below that line change the `FlutterViewController` to `MultiWindowViewContro
 let flutterViewController = MultiWindowViewController()
 ```
 
-Your code should now look something like this: 
+Your code should now look something like this:
 
 ```swift
 ... // Your other imports
-
 import multi_window_macos
 
 class MainFlutterWindow: NSWindow {
-  override func awakeFromNib() {
-    MultiWindowMacosPlugin.registerGeneratedPlugins = RegisterGeneratedPlugins
-    
-    let flutterViewController = MultiWindowViewController.init()
+    override func awakeFromNib() {
+        MultiWindowMacosPlugin.registerGeneratedPlugins = RegisterGeneratedPlugins
 
-    ... // Rest of your code
+        let flutterViewController = MultiWindowViewController.init()
+
+        ... // Rest of your code
 ```
 
 ## Usage
-
-### Accessing your current window
-
-You don't want to keep track of your own current window, so we introduced a helper property called `current` for you:
-
-```dart
-final window = MultiWindow.current; // Returns the current instance this code is running on.
-```
-
-**NOTE**: The first window on startup always has the key `main`.
 
 ### Creating a new window
 
 To create a new window you can call the `MultiWindow.create` method:
 
 ```dart
-final window = await MultiWindow.create(
+final myWindow = await MultiWindow.create(
   'your_unique_key',
   size: Size(100, 100), // Optional size.
   title: 'Your Title', // Optional title.
+  alignment: Alignment.center, // Optional alginment.
 );
 ```
 
 If a window with the given key already exists it will return a reference to that window.
 
-### Getting lists of total created windows
+**NOTE**: The first window that is created on startup will use the key `main`.
+
+### Accessing your current window
+
+The instance of the current window (the window that your dart code is being executed on) is exposed for convencience sake:
+
+```dart
+final myWindow = MultiWindow.current; // Returns the current instance this code is running on.
+```
+
+### CLosing a window
+
+A window can be programmatically closed by calling it's close method:
+
+```dart
+final myWindow = await MultiWindow.create('myWindow');
+
+// Close the window instance.
+await myWindow.close();
+```
+
+When the window succesfully closes the `windowClose` event will be raised.
+
+### Get the count of the current existing windows
 
 Retrieving the total amount of windows can be done using the `MultiWindow.count` method:
 
@@ -114,33 +130,34 @@ final totalWindows = await MultiWindow.count();
 If you want to set or get the title of your window you can use the `setTitle` and `getTitle` methods respectively on your instance:
 
 ```dart
-await window.setTitle('My fancy title');
-final currentTitle = await window.getTitle(); // Returns 'My fancy title'.
+await myWindow.setTitle('My fancy title');
+final currentTitle = await myWindow.getTitle(); // Returns 'My fancy title'.
 ```
 
 ### Listening and emitting events
 
-You can also send data to other windows and listen to events on them.
+#### Listening to events
 
-If you want to listen to events on your current window you can do the following:
+A `MultiWindow` instance also exposes an event stream for listening to events on a window instance:
 
 ```dart
-MultiWindow.current.events.listen((event) {
+final myWindow = await MultiWindow.create('myWindow');
+myWindow.events.listen((event) {
   print('From: ${event.from}, of type ${event.type} with data ${event.data}');
 });
 ```
 
-You can also emit events on your own window like so:
+An event exists out the following:
+
+- The `to` is the key of the window that will receive this event, if you are listening on a window it will be that window's key.
+- The `sender` is the key of the window that send the event, this can also be the window that you are listening on.
+- The `type` is an enum that allows you to differentiate between system and user events.
+- The `data` contains dynamic data that was emitted.
+
+#### Emitting events
+
+You can emit a user event by calling the `.emit` method on a `MultiWindow` instance:
 
 ```dart
-await MultiWindow.current.emit('Hello!');
-```
-
-If your current window's key is `main`, then another window can listen to events on your current window by just getting a reference to that window:
-
-```dart
-final window = await MultiWindow.create('main');
-window.events.listen((event) {
-  print('From: ${event.from}, of type ${event.type} with data ${event.data}');
-});
+await myWindow.emit('Hello world!');
 ```
