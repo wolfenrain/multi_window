@@ -109,10 +109,8 @@ public class MultiWindowMacosPlugin: NSObject, FlutterPlugin {
 
         // Registering a channel first, before starting a new flutter project.
         registerEventChannel(key)
-
         let project = FlutterDartProject.init()
         project.dartEntrypointArguments = [key]
-
         let controller = MultiWindowViewController.init(project: project)
         controller.key = key
         registerGeneratedPlugins(controller)
@@ -120,7 +118,15 @@ public class MultiWindowMacosPlugin: NSObject, FlutterPlugin {
         let window = NSWindow()
         window.styleMask = mainWindow.styleMask
         window.backingType = mainWindow.backingType
-
+        window.titlebarAppearsTransparent = mainWindow.titlebarAppearsTransparent
+        window.titleVisibility = mainWindow.titleVisibility
+        if #available(macOS 10.13, *) {
+            window.toolbar = mainWindow.toolbar
+        }
+        if #available(macOS 11.0, *) {
+            window.toolbarStyle = mainWindow.toolbarStyle
+        }
+        window.isOpaque = mainWindow.isOpaque
         // Setup title.
         if let title = args["title"] as? String {
             window.title = title
@@ -188,7 +194,11 @@ public class MultiWindowMacosPlugin: NSObject, FlutterPlugin {
         windowController.shouldCascadeWindows = mainWindow.windowController?.shouldCascadeWindows ?? true
         windowController.window = window
         windowController.showWindow(self)
-
+        NSApp.activate(ignoringOtherApps: true)
+        window.center()
+        window.orderFront(self)
+        windowController.shouldCloseDocument = true
+//        window.isReleasedWhenClosed = true
         return result(nil)
     }
 
@@ -229,7 +239,7 @@ public class MultiWindowMacosPlugin: NSObject, FlutterPlugin {
         guard let key = arguments["key"] as? String else {
             return nil
         }
-
+        
         return windows.first(where: {($0.contentViewController as! MultiWindowViewController).key == key})
     }
 
